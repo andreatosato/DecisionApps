@@ -1,0 +1,261 @@
+{
+  "name": "Agente Informativo Roma Capitale",
+  "description": "Consultazione informativa sui servizi, le strutture e gli atti del Comune di Roma: fornisce informazioni istituzionali aggiornate su organizzazione, procedure amministrative, uffici, contatti e documenti ufficiali, in sola lettura.\n\n        Capacità principali:\n        - Informazioni sull'organizzazione dell'Amministrazione, organi istituzionali (Sindaco, Giunta, Assemblea Capitolina con consiglieri, gruppi consiliari e commissioni), Municipi (I-XV) e accesso civico.\n        - Guide e istruzioni per l'utilizzo dei servizi (anche online) e per le procedure amministrative.\n        - Recapiti, sedi e orari di uffici di Roma Capitale, sportelli, URP e Municipi, rubrica dipendenti e PEC; individuazione della sede più vicina tramite coordinate.\n        - Atti amministrativi (ordinanze, deliberazioni di Giunta e Assemblea), ricercabili per numero, anno o parola chiave.\n        - Bandi, gare, concorsi e avvisi pubblici, con relative scadenze quando disponibili.\n        - Notizie, comunicati, informazioni di servizio, newsletter INFORoMA e contenuti multimediali istituzionali correlati.\n        - Informazioni su mobilità, trasporti e viabilità: ZTL (esclusa la comunicazione preventiva con contrassegno disabili e titolare non a bordo), parcheggi, trasporto pubblico, lavori stradali, chiusure e deviazioni, mobilità ciclabile e in sharing.\n        - Servizi ATAC per trasporto pubblico e sosta: biglietti e abbonamenti (tipologie, prezzi, validità, rinnovi, agevolazioni), canali di vendita e biglietterie ATAC (orari e servizi di una biglietteria indicata per nome), regole di viaggio, accessibilità di stazioni e mezzi, mappe della rete, lavori programmati che modificano le linee, sosta tariffata / strisce blu (tariffe, pagamento, app, esenzioni), parcheggi e parcheggi di scambio ATAC, assistenza clienti (reclami, rimborsi, oggetti smarriti) e sanzioni sul trasporto pubblico.\n        - Rifiuti e igiene urbana: individuazione dei siti AMA (centri di raccolta e isole ecologiche, contenitori per tessili, pile e farmaci scaduti, punti di raccolta sfalci e potature, sportelli Ta.Ri.) con indirizzo, orari e materiali accettati, anche in base alla posizione dell'utente; informazioni su TARI, raccolta differenziata e servizi di igiene urbana.\n        - Lettura e sintesi della pagina del sito di Roma Capitale che l'utente sta consultando, se il chiamante ne trasmette il riferimento nei metadati della richiesta.\n\n        Quando usarlo:\n        - L'utente cerca istruzioni o dettagli su come accedere a un servizio o a una procedura comunale.\n        - L'utente cerca recapiti, indirizzo od orari di un ufficio o Municipio, o l'ufficio più vicino.\n        - L'utente cerca informazioni riguardo a dipendenti e addetti di Roma Capitale.\n        - L'utente cerca atti ufficiali, bandi, concorsi o avvisi istituzionali.\n        - L'utente vuole notizie, comunicati o comunicazioni di servizio dell'Amministrazione.\n        - L'utente chiede di biglietti, abbonamenti, strisce blu, parcheggi ATAC, biglietterie, regole di viaggio, accessibilità dei mezzi o assistenza clienti del trasporto pubblico, anche senza nominare ATAC.\n        - L'utente chiede dove conferire un rifiuto, qual è il centro di raccolta o lo sportello Ta.Ri. più vicino, o cosa accetta uno specifico centro AMA.\n        - L'utente chiede cosa contiene, di cosa parla o cosa dice la pagina che sta consultando (\"cosa c'è in questa pagina?\", \"riassumi questa pagina\")\n\n        Quando NON usarlo:\n        - Operazioni dispositive o transazioni per conto dell'utente (esecuzione di pagamenti, invio moduli, prenotazioni): fornisce solo le istruzioni, incluse modalità e canali di pagamento.\n        - Accesso o modifica di dati personali o stato di pratiche individuali.\n        - Emissione di certificati o documenti ufficiali personalizzati.\n        - Servizi scolastici: graduatorie, quote, menu e ricerca o localizzazione di strutture scolastiche e asili nido.\n        - Eventi, itinerari, informazioni turistiche o sulla vita in città in chiave di fruizione.\n        - Ricerca di treni e voli (orari, disponibilità, tariffe o prenotazioni).\n        - Segnalazioni operative, meteo o allerte in tempo reale (fornisce solo i numeri utili da contattare); consulenza legale, normativa o supporto decisionale su casi specifici; enti diversi dal Comune di Roma.\n        - Gestione operativa di appuntamenti presso uffici di Roma Capitale e sedi AequaRoma: richiesta, prenotazione, consultazione o cancellazione.\n        - Comunicazione preventive di accesso in ZTL con contrassegno disabili (CUDE) quando il titolare non è a bordo: non è di competenza di questo agente, nemmeno per istruzioni o informazioni di contorno.\n        - Fermate, orari di passaggio e arrivi dei mezzi in tempo reale, percorsi tra due punti e ricerca per prossimità di biglietterie, rivendite o parcheggi.\n\n        Informazioni attese nell'input:\n        - Testo della richiesta con eventuali riferimenti espliciti (servizio, ufficio, Municipio).\n        - Coordinate geografiche, se rilevanti per la ricerca territoriale.\n\n        Vincoli e note:\n        - Accesso in sola lettura ai contenuti informativi istituzionali; non modifica dati né esegue transazioni.\n        - Le informazioni sono limitate ai contenuti disponibili nei portali del Comune di Roma.\n        ",
+  "supportedInterfaces": [
+    {
+      "url": "https://api-ai-preprod.comune.roma.it/agent-informativo/",
+      "protocolBinding": "JSONRPC"
+    },
+    {
+      "url": "https://api-ai-preprod.comune.roma.it/agent-informativo/",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "0.3"
+    }
+  ],
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "securitySchemes": {
+    "BearerAuth": {
+      "httpAuthSecurityScheme": {
+        "description": "Requires a valid JWT Access Token.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "bearerFormat": "JWT",
+      "description": "Requires a valid JWT Access Token.",
+      "scheme": "bearer",
+      "type": "http"
+    }
+  },
+  "securityRequirements": [
+    {
+      "schemes": {
+        "BearerAuth": {}
+      }
+    }
+  ],
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    {
+      "id": "search_institutional_website",
+      "name": "Ricerca Generica nel Sito Istituzionale di Roma Capitale",
+      "description": "Esegue una ricerca nel sito istituzionale di Roma Capitale, restituendo i risultati più rilevanti.",
+      "tags": ["ricerca", "informazioni", "documenti", "sito istituzionale"],
+      "examples": [
+        "Chi è l'Assessore allo Sport?",
+        "Come pago una multa?",
+        "Come posso richiedere un certificato anagrafico a Roma Capitale?"
+      ]
+    },
+    {
+      "id": "get_offices_info",
+      "name": "Ricerca Informazioni Uffici",
+      "description": "Ricerca informazioni sugli uffici di Roma Capitale. Permette di ottenere dettagli come orari di apertura, contatti e servizi disponibili. La ricerca può essere affinata specificando le coordinate dell'utente per prioritizzare gli uffici più vicini.",
+      "tags": ["uffici", "orari", "contatti", "aperture"],
+      "examples": [
+        "Quali sono gli orari di apertura dell'Ufficio Appalti di Roma Capitale?",
+        "Dove si trova la sede del Municipio II di Roma Capitale?",
+        "Quali servizi offre l'Ufficio Permessi di Costruire di Roma Capitale?",
+        "Quale è l'ufficio Anagrafe più vicino alle coordinate 41.9028, 12.4964?"
+      ]
+    },
+    {
+      "id": "get_deliberations",
+      "name": "Ricerca Atti e Deliberazioni",
+      "description": "Cerca atti ufficiali e delibere amministrative di Roma Capitale. Permette di filtrare per numero di atto, anno, tipologia (Ordinanza Sindaco, Deliberazione Giunta Capitolina, Deliberazione Assemblea Capitolina) e parole chiave.",
+      "tags": [
+        "roma",
+        "atti",
+        "deliberazioni",
+        "ordinanze",
+        "giunta",
+        "assemblea"
+      ],
+      "examples": [
+        "Di cosa parla l'Ordinanza del Sindaco n. 4 del 2025?",
+        "Quali sono le ultime delibere approvate dalla Giunta Capitolina?",
+        "Quali sono gli ultimi atti riguardanti la mobilità a Roma Capitale?"
+      ]
+    },
+    {
+      "id": "get_news",
+      "name": "Ricerca Notizie Roma Capitale",
+      "description": "Recupera le notizie e i comunicati recenti dal sito istituzionale di Roma Capitale. Permette di rimanere aggiornati su novità, iniziative e comunicazioni dell'Amministrazione.",
+      "tags": ["notizie", "news", "comunicati", "attualità", "aggiornamenti"],
+      "examples": [
+        "Quali sono le ultime notizie di Roma Capitale?",
+        "Ci sono novità riguardo alla mobilità a Roma?",
+        "Comunicati recenti del Comune di Roma"
+      ]
+    },
+    {
+      "id": "get_bandi",
+      "name": "Ricerca Bandi, Gare e Concorsi",
+      "description": "Recupera bandi, gare d'appalto, avvisi pubblici, concorsi pubblici e avvisi di procedura attivi pubblicati da Roma Capitale, comprese le relative scadenze quando disponibili.",
+      "tags": ["bandi", "gare", "concorsi", "avvisi", "appalti", "scadenze"],
+      "examples": [
+        "Quali bandi sono attualmente attivi a Roma Capitale?",
+        "Ci sono concorsi pubblici aperti al Comune di Roma?",
+        "Bandi per contributi e finanziamenti di Roma Capitale"
+      ]
+    },
+    {
+      "id": "get_inforoma_newsletter",
+      "name": "Newsletter INFORoMA",
+      "description": "Consulta i contenuti della newsletter INFORoMA di Roma Capitale: aggiornamenti su notizie comunali, modifiche al traffico, cantieri e logistica. Permette di ottenere gli ultimi numeri, un numero specifico per data, o cercare un argomento tra i numeri pubblicati.",
+      "tags": [
+        "inforoma",
+        "newsletter",
+        "traffico",
+        "cantieri",
+        "comunicazioni"
+      ],
+      "examples": [
+        "Cosa dice l'ultimo numero di INFORoMA?",
+        "Cosa ha detto INFORoMA sulla ZTL?",
+        "Mostrami la newsletter INFORoMA del 15 maggio 2025"
+      ]
+    },
+    {
+      "id": "get_mobility_info",
+      "name": "Ricerca Mobilità, Trasporti e Viabilità",
+      "description": "Recupera informazioni su mobilità, trasporti e viabilità di Roma Capitale: la rete del trasporto pubblico come sistema di mobilità (pianificazione, progetti, open data), ZTL, permessi e regole del traffico privato, condizioni e lavori stradali, chiusure e deviazioni, mobilità ciclabile e in sharing, e servizi di mobilità in generale. I servizi ATAC (biglietti, sosta tariffata, parcheggi ATAC, assistenza) sono coperti da una funzionalità dedicata.",
+      "tags": ["mobilità", "trasporti", "viabilità", "ztl", "traffico"],
+      "examples": [
+        "Come funziona la ZTL del centro storico?",
+        "Ci sono lavori di viabilità in via Cristoforo Colombo?",
+        "Come raggiungo il centro con i mezzi pubblici a Roma?"
+      ]
+    },
+    {
+      "id": "get_atac_info",
+      "name": "Servizi ATAC: Trasporto Pubblico e Sosta",
+      "description": "Consulta le informazioni pubblicate da ATAC per gli utenti del trasporto pubblico e della sosta tariffata di Roma: biglietti e abbonamenti (tipologie, prezzi, durata e validità, convalida, rinnovi, agevolazioni); canali di vendita, ricarica e pagamento (biglietterie, rivendite, distributori automatici, app, contactless), con orari e servizi di una biglietteria ATAC indicata per nome; regole di viaggio (biciclette, animali, bagagli); accessibilità di stazioni e mezzi; dove trovare le mappe della rete; lavori programmati che modificano il percorso o le fermate di una linea; sosta tariffata e strisce blu (tariffe, orari, pagamento, app, parcometri, esenzioni); parcheggi e parcheggi di scambio ATAC indicati per nome (indirizzo, orari, tariffe); assistenza clienti (contatti, reclami, rimborsi, oggetti smarriti) e sanzioni sul trasporto pubblico. Non copre fermate, orari di passaggio o delle corse, stato del servizio in tempo reale, pianificazione del percorso né la ricerca per prossimità di biglietterie, rivendite o parcheggi: i contenuti ATAC non riportano coordinate.",
+      "tags": [
+        "atac",
+        "trasporto pubblico",
+        "biglietti",
+        "abbonamenti",
+        "strisce blu",
+        "sosta",
+        "parcheggi"
+      ]
+    },
+    {
+      "id": "get_ama_info",
+      "name": "Rifiuti, Siti AMA e Ta.Ri.",
+      "description": "Individua i siti gestiti da AMA e ciò che ciascuno accetta: centri di raccolta e isole ecologiche, contenitori per tessili, pile e batterie e farmaci scaduti, punti di raccolta sfalci e potature, raccolta oli vegetali esausti e sportelli Ta.Ri. Per ogni sito restituisce indirizzo, orari di apertura e materiali conferibili; con le coordinate dell'utente i siti più vicini vengono restituiti per primi con la relativa distanza. Le informazioni su come funzionano i servizi (TARI, raccolta differenziata, calendario di raccolta, ritiro ingombranti a domicilio) provengono dai contenuti istituzionali. Fanno eccezione il calendario di svuotamento dei contenitori e la pulizia stradale, consultabili solo per indirizzo sul sito AMA: per questi l'agente rimanda alla pagina dedicata.",
+      "tags": [
+        "ama",
+        "rifiuti",
+        "centri di raccolta",
+        "isole ecologiche",
+        "tari",
+        "raccolta differenziata"
+      ],
+      "examples": [
+        "Dove porto un materasso vecchio a Roma?",
+        "Qual è il centro di raccolta più vicino alle coordinate 41.8902, 12.4922?",
+        "Posso portare i calcinacci al centro di raccolta di Villa Gordiani?",
+        "Dove si trova lo sportello Ta.Ri. più vicino?"
+      ]
+    },
+    {
+      "id": "get_media",
+      "name": "Canali e Contenuti Multimediali",
+      "description": "Recupera il catalogo dei canali multimediali ufficiali di Roma Capitale: INFORoMA Web TV, News Radio, podcast, canali social ufficiali (anche di Municipi ed enti collegati) e gallerie multimediali, comprese quelle storiche.",
+      "tags": ["media", "podcast", "web tv", "radio", "social", "gallerie"],
+      "examples": [
+        "Quali podcast pubblica Roma Capitale?",
+        "Dove seguo il Comune di Roma sui social?",
+        "Dove trovo la Web TV di Roma Capitale?"
+      ]
+    },
+    {
+      "id": "get_rdp_info",
+      "name": "Ricerca Strutture più Vicine",
+      "description": "Individua le strutture comunali più vicine alla posizione dell'utente tramite l'indice geospaziale della Roma Data Platform (RDP). Richiede le coordinate dell'utente. Attualmente supporta gli asili nido.",
+      "tags": [
+        "strutture",
+        "vicino",
+        "asili nido",
+        "geolocalizzazione",
+        "coordinate"
+      ],
+      "examples": [
+        "Qual è l'asilo nido più vicino a me?",
+        "Asili nido vicino alle coordinate 41.9028, 12.4964",
+        "Dove trovo il nido comunale più vicino?"
+      ]
+    },
+    {
+      "id": "get_rapporto",
+      "name": "Rapporto alla Città del Sindaco",
+      "description": "Cerca all'interno del 'Rapporto alla Città' del Sindaco, il documento annuale con cui l'Amministrazione rende conto dello stato di Roma Capitale e del lavoro svolto nell'anno. Consente di ottenere l'elenco dei rapporti disponibili, una panoramica di un anno specifico o estratti rilevanti per argomento.",
+      "tags": [
+        "rapporto",
+        "sindaco",
+        "rapporto alla città",
+        "bilancio",
+        "annuale"
+      ],
+      "examples": [
+        "Cosa dice il Rapporto alla Città sulla mobilità?",
+        "Mostrami il Rapporto alla Città del Sindaco 2024",
+        "Quali Rapporti alla Città sono disponibili?"
+      ]
+    },
+    {
+      "id": "get_piano_protezione_civile",
+      "name": "Piano di Protezione Civile",
+      "description": "Recupera le sezioni del Piano di Protezione Civile di Roma Capitale: valutazione dei rischi, vie di evacuazione, procedure di emergenza e contatti di protezione civile previsti dal piano comunale.",
+      "tags": [
+        "protezione civile",
+        "piano",
+        "emergenze",
+        "evacuazione",
+        "rischi"
+      ],
+      "examples": [
+        "Cosa prevede il Piano di Protezione Civile per il rischio sismico?",
+        "Quali sono le vie di evacuazione previste dal piano?",
+        "Procedure di emergenza del Piano di Protezione Civile di Roma"
+      ]
+    },
+    {
+      "id": "get_page_content",
+      "name": "Contenuto della Pagina Corrente",
+      "description": "Legge la pagina del sito di Roma Capitale che l'utente sta consultando e ne riassume il contenuto o risponde a domande su ciò che riporta. Legge l'intera pagina per una sintesi, oppure ne cerca un dettaglio specifico se la richiesta riguarda un singolo aspetto. Sono leggibili solo le pagine presenti nell'indice (comune.roma.it, amaroma.it, romamobilita.it).",
+      "tags": [
+        "pagina corrente",
+        "sintesi",
+        "riassunto",
+        "contesto di navigazione"
+      ],
+      "examples": [
+        "Cosa c'è in questa pagina?",
+        "Riassumi questa pagina",
+        "Di cosa parla questa pagina?",
+        "Cosa dice questa pagina sugli orari di apertura?"
+      ]
+    }
+  ],
+  "additionalInterfaces": [
+    {
+      "transport": "JSONRPC",
+      "url": "https://api-ai-preprod.comune.roma.it/agent-informativo/"
+    }
+  ],
+  "preferredTransport": "JSONRPC",
+  "protocolVersion": "0.3",
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "url": "https://rc-apim-hub-test.azure-api.net/a2a/agents/info/invoke"
+}

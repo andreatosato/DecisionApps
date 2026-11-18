@@ -1,0 +1,12 @@
+@api = http://localhost:5374
+
+GET {{api}}/api/agents
+
+###
+
+POST {{api}}/api/ratings
+Content-Type: application/json
+
+{
+  "question": "Vorrei aprire una segnalazione per un cassonetto danneggiato."
+}

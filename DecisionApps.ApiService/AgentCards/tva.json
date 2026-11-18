@@ -1,0 +1,156 @@
+{
+  "name": "Agent_Turismo_Roma_Capitale",
+  "description": "Assistenza turistica e mobilità per Roma: informazioni su luoghi, servizi di prossimità, eventi, trasporti, meteo, allerte e itinerari.\n\n# Capacità principali\n\n## Ricerca luoghi e punti di interesse\n\nCerca luoghi, punti di interesse e riferimenti territoriali a Roma.\n\n- Luoghi e POI: luoghi nominati, punti di interesse, riferimenti territoriali, inclusi recapiti di enti, università e strutture non comunali presenti a Roma  \n- Ristorazione e locali: ristoranti, bar, locali e attività utili alla permanenza in città.\n- Accoglienza e soggiorno: strutture ricettive, alloggi e servizi utili per il soggiorno.\n- Tempo libero: attività, luoghi di svago e servizi utili alla permanenza a Roma.\n\n## Cultura, storia e turismo\n\nFornisce informazioni su luoghi di interesse storico, artistico, culturale, religioso e turistico.\n\n- Patrimonio storico e archeologico: monumenti, aree archeologiche e luoghi storici.\n- Musei e attrazioni culturali: musei, attrazioni, luoghi artistici e turistici.\n- Istituzioni culturali: archivi, biblioteche, case della cultura, accademie e istituti culturali.\n- Luoghi religiosi: luoghi di culto e siti religiosi di interesse storico, artistico o turistico.\n- MIC Card (Musei in Comune): requisiti, come acquistarla, vantaggi e sconti, musei e luoghi inclusi, eventi e concerti convenzionati.\n\n## Aree verdi, sport e tempo libero all'aperto\n\nCerca luoghi e spazi per natura, sport, svago e attività all'aperto.\n\n- Verde urbano: parchi, ville e giardini.\n- Natura e aree protette: riserve naturali e aree naturalistiche.\n- Archeologia all'aperto: aree archeologiche all'aperto.\n- Svago all'aperto: parchi di divertimento, stabilimenti balneari e luoghi per attività all'aperto.\n- Sport: impianti sportivi e luoghi per attività sportive.\n\n## Servizi di prossimità e utilità pubblica\n\nCerca servizi utili, sanitari, informativi, diplomatici e di assistenza sul territorio romano.\n\n- Servizi essenziali: fontanelle, casette dell'acqua, bagni pubblici e cassonetti singoli dei rifiuti.\n- Servizi amministrativi e informativi: uffici postali, punti informativi, punti Wi‑Fi e spazi informagiovani.\n- Servizi diplomatici: ambasciate e consolati.\n- Servizi sanitari: farmacie e parafarmacie, ambulatori e consultori, ASL, sedi ASL, distretti sanitari e servizi sanitari territoriali, ospedali e pronto soccorso, incluse liste di attesa in tempo reale.\n- Servizi sociali e di supporto: centri antiviolenza, case rifugio, case della salute e servizi territoriali di assistenza.\n- Servizi di ordine pubblico: polizia, guardia di finanza, carabinieri, vigili del fuoco e caserme militari.\n- Servizi Roma Notte: Spoke, Hub e Tutor.\n\n## Eventi e attività\n\nConsulta eventi, attività culturali, spettacoli, manifestazioni, visite guidate, concerti, sport e cinema a Roma.\n\n- Eventi culturali: eventi culturali, mostre, visite guidate e manifestazioni.\n- Spettacoli e intrattenimento: spettacoli, concerti e programmazione cinematografica.\n- Eventi sportivi: eventi e manifestazioni sportive.\n- Filtri di ricerca: data, periodo, tipologia e luogo dell'evento.\n\n## Dettagli sui luoghi, aree verdi, servizi, eventi e cultura\n\nFornisce, quando disponibili, informazioni descrittive, pratiche e operative sui luoghi cercati.\n\n- Informazioni descrittive: storia, caratteristiche e contesto del luogo.\n- Informazioni pratiche: indirizzo, civico, contatti, orari e modalità di visita.\n- Servizi disponibili: servizi presenti, accessibilità e informazioni utili alla fruizione.\n- Collegamenti utili: link, riferimenti ufficiali e risorse informative disponibili.\n\n## Mobilità urbana e collegamenti\n\nFornisce informazioni real-time su trasporti, percorsi, fermate, collegamenti e aggiornamenti utili per gli spostamenti da, per e dentro Roma. Per il trasporto pubblico locale urbano fornisce anche tempi di attesa, prossimi passaggi e arrivi previsti alle fermate.\n\n- Collegamenti con bus e tram: ricerca di fermate e linee, identificazione della fermata tramite nome, codice fermata o coordinate, percorsi, orari di passaggio programmati e in tempo reale, tempi di attesa alle fermate.\n- Collegamenti ferroviari: orari dei treni, stazioni e collegamenti ferroviari da e per Roma.\n- Collegamenti aerei: voli, aeroporti e informazioni sugli spostamenti aerei da e per Roma.\n- Aggiornamenti di mobilità: aggiornamenti utili sugli spostamenti e sui collegamenti cittadini. Tempi di attesa alle fermate bus.\n- Calcolo del percorso tra un punto e un altro.\n- Servizi: ricerca e localizzazione di biglietterie, parcheggi e parcheggi di scambio vicino a un luogo o a coordinate.\n\n## Meteo e allerte\n\nRestituisce informazioni meteorologiche e allerte utili per la permanenza in città.\n\n- Meteo: condizioni meteorologiche e previsioni per Roma.\n- Allerte: allerte meteo, avvisi di protezione civile e informazioni in caso di criticità.\n\n## Itinerari turistici\n\nGenera itinerari turistici a Roma in base a durata, zona, interessi, preferenze, accessibilità e modalità di spostamento.\n\n- Durata e periodo: durata dell'itinerario, periodo disponibile e intervallo temporale.\n- Zona e punto di partenza: zona di Roma, punto di partenza e area di interesse.\n- Interessi e preferenze: interessi culturali, preferenze personali e tipo di esperienza desiderata.\n- Accessibilità e spostamenti: esigenze di accessibilità, percorsi a piedi, trasporto pubblico e altre modalità di spostamento.\n\n## Segnalazioni cittadine\n\nSupporta segnalazioni relative alla città di Roma per utenti non italofoni.\n\n- Supporto linguistico: comprensione, traduzione o formulazione della segnalazione.\n- Ambito cittadino: problemi, disservizi o situazioni relative alla città di Roma.\n- Limite operativo: gestione delle segnalazioni solo per utenti non italofoni e non per richieste formulate in italiano.\n\n## Ricerca del municipio di appartenenza\n\nIdentifica il municipio a Roma quando sono disponibili **coordinate numeriche**, oppure in relazione a un **luogo/POI** già individuabile tramite ricerca nominativa.\n\n- Ricerca da coordinate: identificazione del municipio a partire da coordinate geografiche.\n- Ricerca da luogo: identificazione del municipio relativo a un punto di interesse o luogo recuperato tramite ricerca strutturata.\n\n# Quando usarlo\n\n- L'utente cerca luoghi, attrazioni, aree verdi, servizi di prossimità, punti di interesse o informazioni turistiche a Roma.\n- L'utente cerca eventi, spettacoli o programmazione culturale da vivere in città.\n- L'utente cerca ristoranti, alloggi o locali a Roma.\n- L'utente chiede informazioni sulla MIC Card, a chi è rivolta, vantaggi, luoghi inclusi, acquisto, ricezione, rinnovo, MIC Card Gift o assistenza.\n- L'utente chiede aggiornamenti su mobilità, meteo, allerte, treni o voli collegati alla città.\n- L’utente chiede informazioni statiche o in tempo reale su fermate, linee, percorsi, orari di passaggio, tempi di attesa, prossimi passaggi, arrivi previsti, deviazioni o stato del servizio di bus e tram.\n- L’utente chiede informazioni su orari dei treni, stazioni, collegamenti ferroviari da e per Roma. \n- L'utente vuole organizzare un itinerario a Roma.\n- L'utente chiede il municipio di appartenenza con coordinate note, oppure per un luogo/POI ricercabile.\n- Un utente non italofono vuole comprendere, tradurre o formulare una segnalazione cittadina relativa a Roma.\n- L'utente cerca punti di interesse in prossimità a Roma, anche vicino alla propria posizione, inclusi punti di interesse sanitari e socio-sanitari presenti sul territorio.\n- L'utente chiede assistenza durante la notte, oppure informazioni sui servizi del Piano Roma Notte, inclusi assistenza a persone sole, etilometri, ricarica del cellulare e occhiali.\n\n# Quando NON usarlo\n\n- Comunicati, procedure istituzionali, atti, bandi, avvisi dell'amministrazione.\n- Segnalazioni di problemi relativi a Roma formulate in italiano.\n- Pratiche personali del cittadino: anagrafe, tributi, servizi scolastici, CRM o stato di pratiche.\n- Contenuti documentali del Piano di Protezione Civile.\n- Ricerca di centri di raccolta dei rifiuti ingombranti/speciali e ZTL.\n- Richieste su tariffe, biglietti e abbonamenti, agevolazioni, regole di viaggio o accessibilità del trasporto pubblico.\n- Richieste non collegate a Roma, alla permanenza in città, alla mobilità, al turismo o ai servizi territoriali.\n\n# Informazioni attese nell'input\n\n- Testo della richiesta dell'utente, preferibilmente in lingua italiana.\n- Coordinate geografiche dell'utente o del punto di riferimento, se utili per ricerche basate sulla posizione.\n- Riferimenti come luogo, evento, stazione, fermata, volo, periodo, categoria, durata o preferenze; per la prossimità, coordinate o posizione condivisa.\n- Intervallo temporale per eventi, mobilità, meteo o itinerari.\n- Eventuali esigenze di accessibilità o modalità di spostamento preferite.\n\n# Vincoli e note\n\n- Non inventa coordinate, non geocodifica indirizzi o vie in coordinate, link, disponibilità, orari, conferme operative o prese in carico non restituite dai servizi disponibili.\n- Opera in sola lettura per le informazioni turistiche, territoriali e di mobilità.\n- Non esegue operazioni dispositive, salvo il supporto linguistico alla formulazione di segnalazioni per utenti non italofoni.\n- Quando i dati non sono disponibili, incompleti o incerti, deve dichiararlo esplicitamente.\n",
+  "url": "https://rc-apim-hub-test.azure-api.net/a2a/agents/tva/agenta2a",
+  "iconUrl": null,
+  "provider": null,
+  "version": "",
+  "protocolVersion": "0.2.6",
+  "documentationUrl": null,
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": false,
+    "extensions": []
+  },
+  "securitySchemes": null,
+  "security": null,
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    {
+      "id": "luoghi-e-poi",
+      "name": "luoghi-e-poi",
+      "description": "Ricerca luoghi, punti di interesse, servizi nelle vicinanze e strutture cittadine geolocalizzate a Roma.",
+      "tags": [
+        "roma",
+        "luoghi",
+        "poi",
+        "vicinanze",
+        "ricerca-geografica",
+        "servizi-citta"
+      ],
+      "examples": [
+        "Trova 3 farmacie entro 1 km da Piazza Bologna.",
+        "Quali fontanelle pubbliche ci sono entro 500 metri da Piazza Navona?",
+        "Cerco una sede municipale vicino a Via Cristoforo Colombo 200."
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "mobilita-e-viaggi",
+      "name": "mobilita-e-viaggi",
+      "description": "Trasporto pubblico a Roma, arrivi in tempo reale, percorsi, supporto parcheggi, treni, stazioni e voli.",
+      "tags": [
+        "roma",
+        "mobilita",
+        "trasporto-pubblico",
+        "bus",
+        "metro",
+        "trains",
+        "flights",
+        "parcheggi"
+      ],
+      "examples": [
+        "Dammi i prossimi arrivi alla fermata 75335.",
+        "Calcola un percorso con mezzi pubblici da Piazza Bologna al Colosseo.",
+        "Mostrami i treni da Roma Termini a Napoli Centrale domani mattina."
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "eventi-e-cultura",
+      "name": "eventi-e-cultura",
+      "description": "Ricerca eventi, mostre, visite guidate, partite di calcio e programmazione cinema a Roma.",
+      "tags": [
+        "roma",
+        "events",
+        "cultura",
+        "mostre",
+        "calcio",
+        "cinema",
+        "visite-guidate"
+      ],
+      "examples": [
+        "Quali mostre fotografiche ci sono a Roma dal 2 al 6 aprile?",
+        "Trova eventi per bambini vicino a Villa Borghese domenica prossima.",
+        "Cerca la programmazione cinema di oggi vicino a Trastevere."
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "aggiornamenti-e-allerte",
+      "name": "aggiornamenti-e-allerte",
+      "description": "Notizie ufficiali della citta, aggiornamenti sulla mobilita, meteo e allerte di protezione civile per Roma.",
+      "tags": [
+        "roma",
+        "news",
+        "mobilita",
+        "weather",
+        "protezione-civile",
+        "allerte"
+      ],
+      "examples": [
+        "Quali notizie ufficiali del Comune di Roma ci sono oggi sulla mobilita?",
+        "Dammi il meteo a Roma dalle 18:00 alle 23:00.",
+        "Ci sono allerte di protezione civile per Roma oggi?"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "segnalazioni-citta",
+      "name": "segnalazioni-citta",
+      "description": "Gestione segnalazioni cittadine e richieste di ricontatto per i servizi di Roma Capitale.",
+      "tags": [
+        "roma",
+        "segnalazioni",
+        "problemi",
+        "crm",
+        "richiesta-ricontatto",
+        "problemi-citta"
+      ],
+      "examples": [
+        "Segnalazione: lampione spento in Via Nomentana 120.",
+        "Vorrei essere ricontattato per un problema di rifiuti.",
+        "Come posso segnalare una buca in strada?"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "itinerari-personalizzati",
+      "name": "itinerari-personalizzati",
+      "description": "Generazione di itinerari personalizzati a Roma per mezza giornata, un giorno, due giorni o tre giorni.",
+      "tags": [
+        "roma",
+        "itinerari",
+        "itinerario-personalizzato",
+        "turismo",
+        "visita",
+        "pianificazione",
+        "ristorazione"
+      ],
+      "examples": [
+        "Preparami un itinerario culturale di un giorno a Roma partendo da Trastevere.",
+        "Organizza mezza giornata nel pomeriggio con tappe panoramiche e pranzo veloce.",
+        "Crea un percorso di tre giorni per una famiglia con bambini e ristoranti tipici."
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    }
+  ],
+  "supportsAuthenticatedExtendedCard": false,
+  "additionalInterfaces": [],
+  "preferredTransport": "JSONRPC",
+  "signatures": null
+}

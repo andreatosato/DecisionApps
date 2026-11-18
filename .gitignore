@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+.vs/
+.aspire/
+TestResults/
+*.user
+*.xlsx
+*.xls
+.env
+appsettings.Local.json

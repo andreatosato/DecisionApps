@@ -1,0 +1,52 @@
+{
+  "name": "Agente Servizi Anagrafici",
+  "description": "        Servizio anagrafico per i cittadini autenticati di Roma Capitale: individua la posizione anagrafica nelle banche dati comunali ed emette i relativi certificati anagrafici in formato digitale.\n        # Capacità principali:\n        - Emettere certificati anagrafici (es. residenza, stato di famiglia) per il cittadino autenticato o per un membro del suo nucleo familiare.\n        - Rispondere a domande sui servizi di ricerca anagrafica e di emissione dei certificati.\n        - Individuare in modo univoco la posizione anagrafica del cittadino a partire dai suoi dati identificativi.\n\n        # Quando usarlo:\n        - Il cittadino vuole ottenere o emettere un certificato anagrafico.\n        - Il cittadino chiede quali certificati anagrafici può richiedere e come può ottenerli.\n        - Il cittadino vuole verificare o recuperare la propria posizione anagrafica.\n\n        # Quando NON usarlo:\n        - Informazioni descrittive o istruzioni generiche sui servizi comunali senza emissione di un documento.\n        - Segnalazioni, reclami, appuntamenti o richieste di ricontatto operatore.\n- Servizi scolastici, tributi, mobilità o altri domini verticali.\n        - Modifica o rettifica dei dati anagrafici (es. variazioni di residenza, correzioni).\n\n        # Informazioni attese nell'input:\n        - Testo della richiesta dell'utente\n        - Tipo di certificato richiesto\n\n        # Vincoli e note:\n        - Emette i certificati sulla base dei dati di fonte; non modifica i dati anagrafici.\n        - Opera esclusivamente sulla posizione anagrafica del cittadino autenticato o di un membro del suo nucleo familiare.\n",
+  "url": "https://rc-apim-hub-test.azure-api.net/a2a/agents/anagrafe/invoke",
+  "version": "1.0.0",
+  "protocolVersion": null,
+  "defaultInputModes": [
+    "text"
+  ],
+  "defaultOutputModes": [
+    "text",
+    "stream"
+  ],
+  "skills": [
+    {
+      "id": "anagrafica_orchestrator_skill",
+      "name": "Coordinamento Anagrafica e Certificazioni",
+      "description": "Analizza la richiesta del cittadino, estrae le entità rilevanti (codice fiscale, date, documenti) e orchestra in sequenza la validazione anagrafica (SIPO/ANPR) e l'emissione del certificato.",
+      "tags": [
+        "anagrafica",
+        "certificati",
+        "SIPO",
+        "ANPR",
+        "Roma_Capitale"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "information_retrival",
+      "name": "Ricerca Informativa",
+      "description": "Risponde a domande sui servizi di ricerca anagrafica e di emissione dei certificati.",
+      "tags": [],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    }
+  ],
+  "provider": null,
+  "documentationUrl": null,
+  "iconUrl": null,
+  "preferredTransport": "JSONRPC",
+  "capabilities": {
+    "extensions": null,
+    "pushNotifications": true,
+    "stateTransitionHistory": false,
+    "streaming": true
+  },
+  "security": null,
+  "supportsExtendedAgentCard": true
+}

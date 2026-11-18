@@ -1,0 +1,28 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Errore | Decision Lab</PageTitle>
+
+<h1>Impossibile completare la richiesta.</h1>
+<p>Ricaricare il simulatore. Se il problema persiste, verificare i log nella dashboard Aspire.</p>
+<p><a href="/">Torna al simulatore</a></p>
+
+@if (ShowRequestId)
+{
+    <p>
+        <strong>ID richiesta:</strong> <code>@requestId</code>
+    </p>
+}
+
+@code{
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    private string? requestId;
+    private bool ShowRequestId => !string.IsNullOrEmpty(requestId);
+
+    protected override void OnInitialized()
+    {
+        requestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+    }
+}

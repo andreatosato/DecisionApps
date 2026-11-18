@@ -1,0 +1,116 @@
+{
+  "name": "Agente CRM",
+  "description": "Operazioni sui sistemi di Roma Capitale per il cittadino in nove ambiti: apertura e consultazione di segnalazioni; segnalazioni AMA Linea Verde; servizi AMA Cimiteri Capitolini; comunicazioni ZTL disabili (CUDE); verifica di veicoli rimossi; richieste di appuntamento presso uffici di Roma Capitale; appuntamenti AequaRoma; richiesta di ricontatto da un operatore.\n\nCapacità principali:\n• Apertura segnalazioni: crea segnalazioni, reclami, apprezzamenti, suggerimenti o richieste di informazioni e assistenza, classificandoli e instradandoli al servizio competente. Per informazioni e assistenza, usarlo solo se il cittadino chiede espressamente di aprire una segnalazione o inoltrare una richiesta agli uffici, non per semplici domande informative, a eccezione delle domande sulla Cura del verde, da gestire come segnalazioni. È possibile allegare immagini alle segnalazioni.\n• AMA Linea Verde: segnala problemi di rifiuti e pulizia urbana su suolo pubblico, come cassonetti pieni o danneggiati, rifiuti o ingombranti abbandonati, mancata raccolta e strade o marciapiedi sporchi. È possibile allegare immagini alle segnalazioni.\n• Cura del verde: segnala esclusivamente problemi di piantumazione, annaffiatura e irrigazione, potatura e abbattimento di alberi su suolo pubblico, formulati come segnalazione o come domanda, ad esempio richieste o informazioni su nuove piantumazioni, alberi abbattuti e non sostituiti, tronchi o ceppaie non rimossi, tazze arboree o vasche di terra vuote, aree alberate cementate. È possibile allegare immagini alle segnalazioni.\n• AMA Cimiteri Capitolini: apre segnalazioni e richieste su concessioni, operazioni cimiteriali (sepoltura, tumulazione, estumulazione e traslazione di salme), cremazioni, ceneri, illuminazione votiva, decoro e manutenzione, ubicazione salme, scadenze, rimborsi e accesso agli atti.\n• Stato segnalazioni: consulta in sola lettura elenco, stato, date e ufficio o coda assegnataria delle segnalazioni del cittadino.\n• ZTL disabili (CUDE): registra la comunicazione preventiva di accesso in ZTL quando il titolare del contrassegno non è a bordo.\n• Veicoli rimossi: verifica se un veicolo è stato rimosso, spostato a vista o portato in depositeria dalla Polizia Locale.\n• Appuntamenti Roma Capitale: registra una richiesta di appuntamento per:\n  - Punto Abitare: ERP e case popolari, contributo affitto, morosità incolpevole, Buono Casa, CAAT e SASSAT.\n  - Dipartimento Risorse Economiche (DRE): accesso, copia o visura di cartelle esattoriali, contravvenzioni e atti tributari già notificati; accesso agli atti ex Legge 241/90.\n  - URP Municipio VII, sedi Appio/Tuscolano e Cinecittà: per accesso agli atti, accesso civico e agevolazioni TPL.\n• Appuntamenti AequaRoma: prenota, consulta o cancella appuntamenti per IMU, TARI, Contributo di Soggiorno, contravvenzioni e patrimonio. Pagamento, contestazione, rateizzazione, ricorso e verifica della posizione sono motivi dell'appuntamento, non operazioni eseguite dall'agente.\n• Operatore: inoltra la richiesta esplicita di ricontatto da parte del contact center.\n\nQuando usarlo:\n• Il cittadino vuole aprire o consultare una segnalazione.\n• Vuole segnalare rifiuti o problemi di pulizia urbana di competenza AMA Linea Verde.\n• Vuole segnalare un problema relativo ai servizi funebri o cimiteriali di AMA Cimiteri Capitolini.\n• Deve comunicare un accesso ZTL con contrassegno disabili e titolare non a bordo.\n• Vuole verificare se il proprio veicolo è stato rimosso o spostato.\n• Vuole richiedere un appuntamento presso Punto Abitare, DRE o URP Municipio VII.\n• Vuole prenotare, consultare o cancellare un appuntamento AequaRoma.\n• Chiede esplicitamente di parlare con un operatore o di essere richiamato.\n\nQuando NON usarlo:\n• Per altri servizi AMA e RiciclaCasa.\n• Per modificare una segnalazione esistente: le segnalazioni possono essere solo consultate.\n• Per segnalazioni o richieste di ricontatto di cittadini non italofoni, gestite dal canale turistico.\n• Per sole informazioni su tributi e procedure amministrative: requisiti, documenti, modalità e canali di presentazione\n\nVincoli e note:\n• Ogni operazione che scrive dati richiede la conferma esplicita del cittadino.",
+  "url": "https://rc-apim-hub-test.azure-api.net/a2a/agents/crm/invoke",
+  "iconUrl": null,
+  "provider": { "organization": "Roma Capitale", "url": "www.comune.roma.it" },
+  "version": "1.9.4",
+  "protocolVersion": "0.3",
+  "documentationUrl": null,
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true,
+    "extensions": []
+  },
+  "securitySchemes": null,
+  "security": null,
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    {
+      "id": "crm-apertura-case",
+      "name": "Apertura segnalazione / reclamo / comunicazione",
+      "description": "Apre una nuova pratica sui sistemi di Roma Capitale a partire dalla richiesta del cittadino — segnalazione di un disservizio o anomalia, reclamo, apprezzamento, suggerimento, oppure richiesta di informazioni e assistenza — classificandola per area tematica e argomento e instradandola al servizio o Dipartimento competente. Per le segnalazioni che lo richiedono viene chiesto l'indirizzo (via e numero civico). Richiede conferma esplicita del cittadino prima dell'apertura.",
+      "tags": ["case", "segnalazione", "reclamo", "crm"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-ama-linea-verde",
+      "name": "Segnalazione AMA Linea Verde (rifiuti e pulizia urbana)",
+      "description": "Apre una segnalazione di rifiuti o pulizia urbana su suolo pubblico di Roma di competenza AMA Linea Verde — cassonetti o campane pieni, danneggiati, ribaltati o bruciati; rifiuti o sacchetti abbandonati; mancata raccolta; rifiuti ingombranti da ritirare; strade, marciapiedi o aree da pulire; cestini stradali pieni; deiezioni su suolo pubblico — classificata sulla tassonomia AMA e instradata alla coda AMA Linea Verde. Richiede conferma esplicita del cittadino prima dell'apertura.",
+      "tags": ["case", "segnalazione", "rifiuti", "ama", "pulizia", "crm"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-ama-cimiteri",
+      "name": "Servizi funebri e cimiteriali AMA Cimiteri Capitolini",
+      "description": "Gestisce le richieste sui servizi funebri e cimiteriali dei Cimiteri Capitolini di Roma (AMA Cimiteri Capitolini). Risponde a domande informative su questi servizi (concessioni, cremazioni, ceneri, illuminazione votiva, orari e accesso, ubicazione salma, scadenze e rinnovi, rimborsi, accesso agli atti); quando il cittadino ha un problema da segnalare, o dopo una risposta informativa desidera comunque aprire una pratica, apre una segnalazione — concessioni, tumulazioni/inumazioni/esumazioni/estumulazioni, cremazioni, affido o dispersione delle ceneri, illuminazione votiva, decoro e manutenzione dei cimiteri, ubicazione salma, scadenza trentennale, rimborsi, accesso agli atti — instradata alla coda AMA Cimiteri Capitolini per la presa in carico. Raccoglie il cimitero di riferimento tra quelli capitolini. Richiede conferma esplicita del cittadino prima dell'apertura della pratica.",
+      "tags": ["case", "cimiteri", "funebre", "ama", "faq", "crm"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-consultazione-case",
+      "name": "Consultazione stato della pratica",
+      "description": "Restituisce, in sola lettura, stato corrente, data di apertura, ultimo aggiornamento e coda o Dipartimento assegnatario di una o più pratiche associate al cittadino; non modifica il contenuto della pratica.",
+      "tags": ["case", "consultazione", "crm"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-ztl-cude",
+      "name": "Comunicazione preventiva targhe ZTL CUDE",
+      "description": "Registra la comunicazione preventiva di accesso in ZTL effettuata da un cittadino con veicolo associato a contrassegno disabili (CUDE) in assenza del titolare a bordo; richiede targa, numero di concessione, comune di rilascio del CUDE e l'intervallo di accesso. Non comporta autorizzazione al transito né inserimento in whitelist.",
+      "tags": ["ztl", "cude", "mobilita"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-veicoli-rimossi",
+      "name": "Verifica veicoli rimossi",
+      "description": "Verifica, fornendo la targa e l'indirizzo o un punto di riferimento (una via/piazza/viale oppure un luogo noto, senza numero civico) dove il veicolo era parcheggiato, se un veicolo risulta rimosso, spostato a vista o presente in depositeria secondo i sistemi della Polizia Locale.",
+      "tags": ["veicoli", "rimozione", "polizia-locale"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-appuntamenti-aequaroma",
+      "name": "Appuntamenti AequaRoma",
+      "description": "Consente al cittadino di prenotare, consultare e cancellare un appuntamento presso una sede AequaRoma, in modalità in presenza o online.",
+      "tags": ["aequaroma", "appuntamenti", "tributi"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-appuntamenti-uffici",
+      "name": "Prenotazione appuntamento uffici (Punto Abitare, DRE, URP Municipio VII)",
+      "description": "Registra la richiesta di un appuntamento presso gli uffici di Roma Capitale per uno di questi servizi: Punto Abitare, Dipartimento Risorse Economiche, URP del Municipio VII (sede Appio Tuscolano o Cinecittà). Disambigua il servizio e, per il Municipio VII, la sede; raccoglie il motivo dell'appuntamento e la preferenza di data e orario. Apre una pratica di back office instradata al Contact Center 060606: non fissa uno slot in agenda, un operatore ricontatta il cittadino al recapito presente in anagrafica per concordare data e ora. Diversa dagli appuntamenti presso le sedi AequaRoma. Richiede conferma esplicita del cittadino prima dell'apertura della pratica.",
+      "tags": ["appuntamento", "prenotazione", "uffici", "case", "crm"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    },
+    {
+      "id": "crm-operatore-ricontatto",
+      "name": "Richiesta operatore / ricontatto",
+      "description": "Inoltra la richiesta esplicita del cittadino di parlare con un operatore umano o di essere ricontattato dal contact center, registrando una pratica di ricontatto.",
+      "tags": ["operatore", "ricontatto", "contact-center"],
+      "examples": null,
+      "inputModes": null,
+      "outputModes": null,
+      "security": null
+    }
+  ],
+  "supportsAuthenticatedExtendedCard": false,
+  "additionalInterfaces": [],
+  "preferredTransport": "JSONRPC",
+  "signatures": null
+}

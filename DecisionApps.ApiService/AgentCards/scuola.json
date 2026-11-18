@@ -1,0 +1,127 @@
+{
+  "name": "Agente Servizi Scolastici",
+  "description": "Servizi scolastici ed educativi di Roma Capitale (fascia 0-6 e servizi di supporto) per il cittadino:\nconsultazione della posizione in graduatoria, simulazione delle quote contributive, menu scolastici e ricerca delle strutture educative comunali.\n\nCapacità principali:\n- Consultare la posizione e l'esito in graduatoria per asili nido, sezioni ponte e scuola dell'infanzia.\n- Simulare o calcolare le quote contributive dei servizi 0-3 e dei servizi di supporto (mensa e trasporto scolastico).\n- Consultare i menu della ristorazione scolastica per giorno, Municipio e ciclo scolastico\n- Ricercare le strutture scolastiche a partire da un municipio e ottenere relativi servizi, recapiti e ubicazione.\n\nQuando usarlo:\n- Il cittadino chiede la propria posizione o l'esito in graduatoria per nido, sezione ponte o infanzia.\n- Il cittadino vuole stimare il costo di nido, mensa o trasporto scolastico.\n- Il cittadino chiede il menu della mensa scolastica.\n- Il cittadino cerca una scuola o un nido, vuole sapere i suoi contatti o dove si trova.\n\nQuando NON usarlo:\n- Informazioni istituzionali generiche su servizi dell'amministrazione non scolastici.\n- Segnalazioni, reclami, appuntamenti o richieste di ricontatto operatore.\n- Certificati anagrafici, tributi, mobilità, turismo o altri domini verticali.\n- Iscrizioni o pagamenti dei servizi scolastici.\n\nVincoli e note:\n- Fornisce consultazioni e simulazioni; non effettua iscrizioni né pagamenti.",
+  "url": "https://rc-apim-hub-test.azure-api.net/a2a/agents/mescai/invoke",
+  "version": "1.0.0",
+  "protocolVersion": null,
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text", "stream"],
+  "skills": [
+    {
+      "id": "information_retrival",
+      "name": "Ricerca Informativa",
+      "description": "Risponde a domande sui servizi scolastici comunali.",
+      "tags": [],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "agente_graduatoria_infanzia",
+      "name": "Graduatorie Scuola Infanzia (3-6 anni)",
+      "description": "Consulta la graduatoria per la scuola dell'infanzia",
+      "tags": [
+        "graduatoria",
+        "lista attesa",
+        "punteggio",
+        "scuola materna",
+        "infanzia",
+        "ammissione",
+        "esito"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "agente_graduatorie_nido_ponte",
+      "name": "Graduatorie Nido (0-3 anni)",
+      "description": "Recupera la posizione in graduatoria per asili nido e sezioni ponte.",
+      "tags": [
+        "graduatoria nido",
+        "nascituro",
+        "asilo nido",
+        "lista attesa nido",
+        "ammissione nido"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "agente_menu",
+      "name": "Consultazione Menu",
+      "description": "Recupera i menu della ristorazione scolastica.",
+      "tags": ["menu", "cibo", "pranzo", "scuole", "municipio"],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "agente_quota_03",
+      "name": "Simulatore Quote Servizi 0-3",
+      "description": "Calcola le quote contributive dei servizi scolastici 0-3.",
+      "tags": [
+        "quote",
+        "asilo nido",
+        "nido",
+        "0-3",
+        "spazio gioco",
+        "isee",
+        "tariffa"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "agente_quota_servizi_sup",
+      "name": "Quote Servizi Supporto (Mensa e Trasporto)",
+      "description": "Calcola le quote dei servizi di ristorazione (mensa) e trasporto (scuolabus).",
+      "tags": [
+        "mensa",
+        "ristorazione",
+        "trasporto",
+        "scuolabus",
+        "quote",
+        "tariffe",
+        "isee",
+        "dieta"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    },
+    {
+      "id": "agente_strutture",
+      "name": "Ricerca Strutture",
+      "description": "Ricerca le strutture scolastiche comunali e i relativi servizi.",
+      "tags": [
+        "indirizzi scuole",
+        "dove si trova",
+        "contatti nido",
+        "email scuola",
+        "numero di telefono",
+        "orari apertura",
+        "elenco strutture",
+        "municipio",
+        "mappa scuole"
+      ],
+      "inputModes": null,
+      "outputModes": null,
+      "examples": null
+    }
+  ],
+  "provider": null,
+  "documentationUrl": null,
+  "iconUrl": null,
+  "preferredTransport": "JSONRPC",
+  "capabilities": {
+    "extensions": null,
+    "pushNotifications": true,
+    "stateTransitionHistory": false,
+    "streaming": true
+  },
+  "security": null,
+  "supportsExtendedAgentCard": true
+}
