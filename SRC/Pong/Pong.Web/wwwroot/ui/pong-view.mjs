@@ -51,7 +51,8 @@ export class PongView {
     elements.reset.disabled = !configured;
     elements.start.textContent = "INIZIA PARTITA";
     elements["game-status"].textContent = configured ? "PRONTO" : "NON CONFIGURATO";
-    this.overlay("UMANO VS MODELLO", "PRONTO AL SERVIZIO?", "Il primo a 7 vince. Tu giochi a sinistra.", "INIZIA PARTITA");
+    this.overlay("UMANO VS MODELLO", "PRONTO AL SERVIZIO?",
+      "Il primo a 7 vince. Al primo avvio preparo Decision prima del servizio.", "INIZIA PARTITA");
     this.announceScore(game);
     this.updateReadout(game);
   }

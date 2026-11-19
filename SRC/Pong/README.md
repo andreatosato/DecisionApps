@@ -71,6 +71,15 @@ dotnet run --project .\SRC\Pong\Pong.Web
 
 Il caricamento della pagina legge solo la configurazione; le inferenze iniziano
 premendo **INIZIA PARTITA** e possono consumare token a pagamento.
+Al primo avvio della pagina compare **WAITING / DECISION**: una chiamata reale
+prepara autenticazione e modello mentre il campo resta fermo al servizio.
+La partita inizia solo dopo una risposta valida, non dopo un timer.
+La risposta di preparazione compare nello storico come `#0 / PREPARAZIONE`,
+ma non muove la racchetta e non alimenta la stima di latenza degli scambi.
+Pausa, cambio scheda e reset annullano l'attesa; errori e timeout restano
+visibili e richiedono un nuovo avvio manuale.
+Una volta pronto, il modello non viene preparato di nuovo per pause o nuove
+partite nella stessa pagina. Ricaricando la pagina si ripete la preparazione.
 
 ### Configurazione
 
@@ -87,8 +96,8 @@ Non si rilancia l'acquisizione delle credenziali per ogni snapshot. Le richieste
 contemporanee condividono un solo rinnovo; l'annullamento di un punto interrompe
 solo l'attesa di quel chiamante, non l'autenticazione condivisa, che ha un limite
 di 30 secondi e viene annullata allo spegnimento del servizio.
-La prima autenticazione puo comunque richiedere diversi secondi: la palla
-non si ferma e il modello puo perdere punti prima di ricevere una risposta.
+La prima autenticazione puo comunque richiedere diversi secondi: questa attesa
+avviene durante la preparazione iniziale, prima di mettere la palla in gioco.
 Si memorizza il token, mai le decisioni: ogni snapshot continua a invocare
 realmente il modello.
 L'identita deve gia avere i permessi di inferenza sulla risorsa:
@@ -113,8 +122,8 @@ I user-secrets di ChatBot non vengono copiati.
 - **NUOVA PARTITA**: azzera punteggi e statistiche, senza avviare altre inferenze.
 - Perdere il focus o cambiare scheda mette in pausa gioco e nuove richieste.
 - Dopo ogni punto la palla torna al centro e il nuovo servizio parte subito,
-  senza conto alla rovescia. Anche il primo servizio parte immediatamente.
-- La fisica non attende mai un'inferenza, nemmeno la prima: palla e comandi
+  senza conto alla rovescia. Il primo servizio attende solo la preparazione AI.
+- Durante la partita la fisica non attende mai un'inferenza: palla e comandi
   umani continuano durante l'elaborazione. Una risposta lenta puo far perdere
   il punto al modello, ma non mette il campo in pausa.
 
