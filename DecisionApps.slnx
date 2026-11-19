@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/ChatBot/">
+    <Project Path="SRC/ChatBot/DecisionApps.ApiService/DecisionApps.ApiService.csproj" />
+    <Project Path="SRC/ChatBot/DecisionApps.AppHost/DecisionApps.AppHost.csproj" />
+    <Project Path="SRC/ChatBot/DecisionApps.Contracts/DecisionApps.Contracts.csproj" />
+    <Project Path="SRC/ChatBot/DecisionApps.ServiceDefaults/DecisionApps.ServiceDefaults.csproj" />
+    <Project Path="SRC/ChatBot/DecisionApps.Tests/DecisionApps.Tests.csproj" />
+    <Project Path="SRC/ChatBot/DecisionApps.Web/DecisionApps.Web.csproj" />
+  </Folder>
+  <Folder Name="/Pong/">
+    <Project Path="SRC/Pong/Pong.AppHost/Pong.AppHost.csproj" />
+    <Project Path="SRC/Pong/Pong.ServiceDefaults/Pong.ServiceDefaults.csproj" />
+    <Project Path="SRC/Pong/Pong.Tests/Pong.Tests.csproj" />
+    <Project Path="SRC/Pong/Pong.Web/Pong.Web.csproj" />
+  </Folder>
+</Solution>

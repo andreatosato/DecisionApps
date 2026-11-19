@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10120f">
+  <meta name="description" content="Pong 2D: sfida una racchetta guidata da Microsoft Decision 1.1 e Microsoft Agent Framework.">
+  <title>Pong | Decision Lab</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%2310120f' d='M0 0h32v32H0z'/%3E%3Cpath fill='%23e3edac' d='M5 8h3v16H5zm19 0h3v16h-3zM14 14h4v4h-4z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.mjs"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="Decision Lab, Pong"><span class="brand-mark" aria-hidden="true">D<span>:</span></span> DECISION LAB <span class="edition">/ PLAYGROUND 02</span></a>
+      <span class="framework">MICROSOFT AGENT FRAMEWORK</span>
+    </header>
+
+    <section class="intro" aria-labelledby="title">
+      <div><p class="eyebrow"><span class="signal" aria-hidden="true"></span> UN CLASSICO. UN NUOVO AVVERSARIO.</p><h1 id="title">PONG<span class="title-dot">.</span></h1></div>
+      <p class="intro-copy">Tu hai i riflessi.<br>Il tuo avversario ha <strong>Decision 1.1.</strong><br><span>Posizione, velocita, una decisione alla volta.</span></p>
+    </section>
+
+    <div class="game-layout">
+      <section class="arcade" aria-labelledby="arena-title">
+        <div class="arena-heading"><h2 id="arena-title">01 / CAMPO DI GIOCO</h2><span id="game-status" class="status" role="status">CONNESSIONE...</span></div>
+        <div class="canvas-wrap">
+          <canvas id="court" width="960" height="600" tabindex="0" aria-label="Campo Pong. Controlla la racchetta sinistra con W e S, frecce su e giu, oppure trascina sul campo. Spazio mette in pausa.">Il browser deve supportare Canvas 2D per giocare a Pong.</canvas>
+          <div class="game-overlay" id="game-overlay">
+            <p class="overlay-kicker" id="overlay-kicker">UMANO VS MODELLO</p>
+            <h2 id="overlay-title">PRONTO AL SERVIZIO?</h2>
+            <p id="overlay-copy">Il primo a 7 vince. Tu giochi a sinistra.</p>
+            <button type="button" class="primary" id="overlay-start" disabled>CARICAMENTO...</button>
+          </div>
+        </div>
+        <div class="court-legend"><span><span class="player-dot"></span> TU <span class="muted">/ SINISTRA</span></span><span>PRIMO A <strong>7</strong></span><span>DECISION 1.1 <span class="model-dot"></span></span></div>
+        <div class="game-toolbar">
+          <div class="buttons"><button type="button" class="primary" id="start" disabled>INIZIA PARTITA <span aria-hidden="true">&#8599;</span></button><button type="button" id="pause" disabled>PAUSA</button><button type="button" id="reset" disabled aria-label="Azzera punteggi e inizia una nuova partita">NUOVA PARTITA</button></div>
+          <span class="keyboard-hint"><kbd>W</kbd> <kbd>S</kbd> / <kbd>&uarr;</kbd> <kbd>&darr;</kbd></span>
+        </div>
+        <p class="help">Muovi la racchetta con la tastiera o trascina sul campo. <kbd>SPAZIO</kbd> pausa. Decision agisce solo sulla palla in arrivo nella meta destra. Velocita +10% a ogni colpo, fino a 600 px/s.</p>
+        <p class="error" id="error" role="alert" hidden></p>
+        <p class="sr-only" id="score-announcement" role="status" aria-live="polite">Punteggio: tu 0, Decision 0.</p>
+      </section>
+
+      <aside class="inspector" aria-labelledby="inspector-title">
+        <div class="inspector-header"><h2 id="inspector-title">02 / DENTRO L'AGENTE</h2><span class="live-dot" id="live-dot" aria-hidden="true"></span></div>
+        <div class="model-card"><span class="tiny-label">MOTORE DECISIONALE</span><h3>Microsoft<br>Decision 1.1</h3><span class="model-badge">NATIVE SYSTEMONE</span><p id="configuration">Lettura della configurazione...</p></div>
+        <section class="inspector-section response-monitor" aria-labelledby="response-title">
+          <div class="section-label"><h3 id="response-title">RISPOSTE IN ARRIVO</h3><span id="response-count">0 RICEVUTE</span></div>
+          <p class="last-update" id="last-update">Nessuna risposta ricevuta</p>
+          <ol class="response-list" id="response-list" aria-label="Ultime otto risposte del modello, dalla piu recente"></ol>
+          <p class="response-help">Ogni riga e una nuova risposta, anche se la direzione non cambia. Ultime 8; tempi totali browser/API.</p>
+        </section>
+        <div class="inspector-section"><div class="section-label"><h3>ULTIMA AZIONE / DECISION</h3><span id="request-state">IN ATTESA</span></div><div class="action" id="action" aria-live="polite"><span id="action-arrow" aria-hidden="true">&mdash;</span><strong id="action-name">IN ATTESA</strong></div><div class="probability"><div><span>SU</span><strong id="up-value">--</strong></div><div class="track"><span id="up-bar"></span></div></div><div class="probability"><div><span>GIU</span><strong id="down-value">--</strong></div><div class="track"><span id="down-bar"></span></div></div><div class="probability"><div><span>FERMO</span><strong id="stay-value">--</strong></div><div class="track"><span id="stay-bar"></span></div></div>
+          <details class="observation-panel"><summary>DATI INVIATI A DECISION</summary><p id="decision-context">Nessuna osservazione inviata.</p><pre id="observation-history"></pre></details>
+        </div>
+        <div class="inspector-section"><div class="section-label"><h3>STATO DELLA PALLA</h3><span>LIVE</span></div><dl class="state-grid"><div><dt>POSIZIONE X</dt><dd id="ball-x">480 <small>px</small></dd></div><div><dt>POSIZIONE Y</dt><dd id="ball-y">300 <small>px</small></dd></div><div><dt>VELOCITA X</dt><dd id="ball-vx">-- <small>px/s</small></dd></div><div><dt>VELOCITA Y</dt><dd id="ball-vy">-- <small>px/s</small></dd></div></dl></div>
+        <div class="inspector-section"><dl class="stats"><div><dt>Velocita totale palla</dt><dd id="ball-speed">--</dd></div><div><dt>Tempo HTTP modello</dt><dd id="latency">--</dd></div><div><dt>Tempo risposta totale</dt><dd id="response-time">--</dd></div><div><dt>Decisioni ricevute</dt><dd id="decisions">0</dd></div><div><dt>Token ultima risposta</dt><dd id="tokens">--</dd></div></dl></div>
+        <p class="agent-note"><span aria-hidden="true">&#8627;</span> Solo Decision sceglie <strong>su</strong>, <strong>giu</strong> o <strong>fermo</strong>, usando stato, storico reale e latenza misurata. Nessuna traiettoria o posizione bersaglio calcolata localmente. Dopo il colpo la racchetta torna automaticamente al centro, senza chiamare il modello.</p>
+      </aside>
+    </div>
+    <footer><span>ISPIRATO AI CLASSICI ARCADE / GRAFICA 2D ORIGINALE</span><span>Le decisioni usano il deployment reale e possono consumare token.</span></footer>
+  </main>
+</body>
+</html>

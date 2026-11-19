@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Pong.AppHost/Pong.AppHost.csproj" />
+  <Project Path="Pong.ServiceDefaults/Pong.ServiceDefaults.csproj" />
+  <Project Path="Pong.Tests/Pong.Tests.csproj" />
+  <Project Path="Pong.Web/Pong.Web.csproj" />
+</Solution>
