@@ -12,12 +12,18 @@ public static class PongDecisionPrompt
         paddle's left face from the full state, including repeated wall bounces.
         Account for ball direction, paddle dimensions, movement latency and the time
         until intercept. decisionIntervalSeconds is the nominal update cadence, not
-        a fixed movement duration. An action can remain active until the next answer,
-        but expires 350 milliseconds after its observation. You are invoked only
+        a         fixed movement duration in realtime mode. playMode identifies the timing:
+        in realtime, an action can remain active until the next answer but expires
+        350 milliseconds after its observation; the game keeps moving during inference.
+        In steps mode, the entire court is frozen during inference, then the chosen
+        action runs for exactly decisionIntervalSeconds of simulated time at most.
+        Steps history timestamps use simulation time. Measured response latency is
+        wall-clock time: do not project movement during that wait in steps mode.
+        You are invoked only
         while the ball is in the right half and moving toward the right paddle.
         Use velocityX and velocityY, not just the current ball y, to choose the most
-        useful direction for the next decision interval. The game keeps moving during
-        inference. Every request is a fresh observation, not a command to repeat the
+        useful direction for the next decision interval.
+        Every request is a fresh observation, not a command to repeat the
         previous action. history contains up to five actual observations, oldest
         first, with browser-monotonic timestampMilliseconds, ballX, ballY, velocityX,
         velocityY and paddleY. observedAtMilliseconds identifies the current state.
@@ -25,8 +31,8 @@ public static class PongDecisionPrompt
         No local trajectory or interception estimate is supplied: infer the future
         interception yourself from the velocities, walls and observed history.
         estimatedResponseMilliseconds, when present, is smoothed measured round-trip
-        latency, not a guarantee. Use it and the observed paddle motion to account
-        for the ball and paddle continuing to move while you decide.
+        latency, not a guarantee. In realtime mode, use it and the observed paddle
+        motion to account for the ball and paddle continuing to move while you decide.
         Re-evaluate the future interception height and compare it with the paddle.
         Reverse direction when appropriate to avoid overshooting. Choose stay when
         the paddle already covers the anticipated ball path or further movement

@@ -7,6 +7,16 @@ namespace Pong.Tests;
 
 public sealed class ValidationTests
 {
+    [Theory]
+    [InlineData("https://offline.invalid/openai/v1/chat/completions", true)]
+    [InlineData("https://offline.invalid/openai/v1/responses", false)]
+    [InlineData("http://offline.invalid/openai/v1/chat/completions", false)]
+    [InlineData("https://offline.invalid/openai/v1/chat/completions?api-key=test", false)]
+    public void GptAcceptsOnlyTheConfiguredChatCompletionsProtocol(string endpoint, bool valid)
+    {
+        Assert.Equal(valid, GptOptions.IsValid(new() { Deployment = "gpt-6-luna", Endpoint = endpoint }));
+    }
+
     [Fact]
     public void AcceptsValidStateAndDifferentArenaDimensions()
     {

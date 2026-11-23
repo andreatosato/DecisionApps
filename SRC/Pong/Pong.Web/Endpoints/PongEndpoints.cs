@@ -12,10 +12,19 @@ public static class PongEndpoints
 {
     public static void MapPongEndpoints(this IEndpointRouteBuilder routes)
     {
-        routes.MapGet("/api/configuration", (IOptions<DecisionOptions> options) => Results.Ok(new
+        routes.MapGet("/api/configuration", (IOptions<DecisionOptions> options, IOptions<GptOptions> gpt) => Results.Ok(new
         {
             deployment = options.Value.Deployment,
-            authentication = string.IsNullOrWhiteSpace(options.Value.ApiKey) ? "Microsoft Entra ID" : "API key"
+            authentication = string.IsNullOrWhiteSpace(options.Value.ApiKey) ? "Microsoft Entra ID" : "API key",
+            models = new[]
+            {
+                new { id = "decision", label = "Decision 1.1", deployment = options.Value.Deployment,
+                    available = true, protocol = "NATIVE SYSTEMONE",
+                    authentication = string.IsNullOrWhiteSpace(options.Value.ApiKey) ? "Microsoft Entra ID" : "API key" },
+                new { id = "gpt", label = "GPT", deployment = gpt.Value.Deployment,
+                    available = gpt.Value.IsConfigured, protocol = "CHAT COMPLETIONS",
+                    authentication = string.IsNullOrWhiteSpace(gpt.Value.ApiKey) ? "Microsoft Entra ID" : "API key" }
+            }
         }));
         routes.MapPost("/api/decisions", DecideAsync).RequireRateLimiting("inference");
     }
@@ -31,6 +40,10 @@ public static class PongEndpoints
         if (!StateValidator.CanDecide(request))
         {
             return Results.Problem("Decision acts only on a ball in the right half moving toward the right paddle.", statusCode: 400);
+        }
+        if (request.Model is not ("decision" or "gpt"))
+        {
+            return Results.Problem("Unknown model selection.", statusCode: 400);
         }
         try
         {

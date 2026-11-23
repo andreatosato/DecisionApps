@@ -12,7 +12,7 @@ public static class StateValidator
     public static bool IsValid(DecisionRequest? request)
     {
         if (request is not { Arena: { } arena, Ball: { } ball, Paddle: { } paddle } ||
-            request.Sequence < 0)
+            request.Sequence < 0 || request.PlayMode is not ("realtime" or "steps"))
         {
             return false;
         }

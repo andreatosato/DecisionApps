@@ -15,7 +15,7 @@ public sealed class PongDecisionAgent(DecisionClient client) : AIAgent
         RespectRequiredConstructorParameters = true
     };
     public override string Name => "PongDecisionAgent";
-    public override string Description => "Native Decision 1.1 SystemOne inference for up/down/stay Pong control with observed history.";
+    public override string Description => "Decision SystemOne or configured GPT inference for up/down/stay Pong control with observed history.";
 
     protected override ValueTask<AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default)
         => ValueTask.FromResult<AgentSession>(new PongSession());

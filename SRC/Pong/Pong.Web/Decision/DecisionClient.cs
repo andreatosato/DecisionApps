@@ -9,7 +9,8 @@ using Pong.Web.Game;
 
 namespace Pong.Web.Decision;
 
-public sealed class DecisionClient(HttpClient http, DecisionTokenProvider tokens, IOptions<DecisionOptions> configuration)
+public sealed class DecisionClient(
+    HttpClient http, DecisionTokenProvider tokens, IOptions<DecisionOptions> configuration, IOptions<GptOptions> gptConfiguration)
 {
     public async Task<DecisionResult> EvaluateAsync(
         DecisionRequest state, string instructions, IReadOnlyDictionary<string, string> criteria,
@@ -19,13 +20,28 @@ public sealed class DecisionClient(HttpClient http, DecisionTokenProvider tokens
         {
             throw new DecisionException("Decision acts only on a valid incoming ball in the right half.", 400);
         }
-        var options = configuration.Value;
+        if (state.Model is not ("decision" or "gpt"))
+        {
+            throw new DecisionException("Unknown model selection.", 400);
+        }
+        var isGpt = state.Model == "gpt";
+        var gpt = gptConfiguration.Value;
+        if (isGpt && !gpt.IsConfigured)
+        {
+            throw new DecisionException("GPT is not configured. Set Gpt:Deployment and Gpt:Endpoint.", 503);
+        }
+        var options = isGpt ? new DecisionOptions
+        {
+            Endpoint = gpt.Endpoint, Deployment = gpt.Deployment, ApiKey = gpt.ApiKey
+        } : configuration.Value;
+        var provider = isGpt ? "azure.ai.openai" : DecisionTelemetry.ProviderName;
+        var operation = isGpt ? "chat" : DecisionTelemetry.OperationName;
         var parentActivity = Activity.Current;
-        parentActivity?.SetTag("gen_ai.provider.name", DecisionTelemetry.ProviderName);
+        parentActivity?.SetTag("gen_ai.provider.name", provider);
         parentActivity?.SetTag("gen_ai.request.model", options.Deployment);
         using var request = new HttpRequestMessage(HttpMethod.Post, options.Endpoint)
         {
-            Content = JsonContent.Create(new
+            Content = isGpt ? GptProtocol.CreateContent(options.Deployment, state, instructions, criteria) : JsonContent.Create(new
             {
                 model = options.Deployment,
                 state,
@@ -57,15 +73,16 @@ public sealed class DecisionClient(HttpClient http, DecisionTokenProvider tokens
             {
                 parentActivity?.SetTag("error.type", "authentication_error");
                 parentActivity?.SetStatus(ActivityStatusCode.Error);
-                throw new DecisionException("Azure authentication is unavailable. Sign in locally or configure Decision:ApiKey in user-secrets.", 503, ex);
+                throw new DecisionException($"Azure authentication is unavailable. Sign in locally or configure {(isGpt ? "Gpt" : "Decision")}:ApiKey in user-secrets.", 503, ex);
             }
         }
 
-        var tags = DecisionTelemetry.CreateTags(options);
+        var tags = DecisionTelemetry.CreateTags(options, provider, operation);
         using var activity = DecisionTelemetry.ModelSource.StartActivity(
-            $"{DecisionTelemetry.OperationName} {options.Deployment}", ActivityKind.Client,
+            $"{operation} {options.Deployment}", ActivityKind.Client,
             parentContext: default, tags: tags);
-        activity?.SetTag("decision.protocol", "systemone");
+        activity?.SetTag("decision.protocol", isGpt ? "chat_completions" : "systemone");
+        activity?.SetTag("pong.play_mode", state.PlayMode);
         var timer = Stopwatch.StartNew();
         TimeSpan? requestDuration = null;
         var failureRecorded = false;
@@ -85,17 +102,19 @@ public sealed class DecisionClient(HttpClient http, DecisionTokenProvider tokens
                 MarkFailure(((int)response.StatusCode).ToString(System.Globalization.CultureInfo.InvariantCulture));
                 throw response.StatusCode switch
                 {
-                    HttpStatusCode.TooManyRequests => new DecisionException("Decision is rate limited. Try again shortly.", 429),
+                    HttpStatusCode.TooManyRequests => new DecisionException("The selected model is rate limited. Try again shortly.", 429),
                     HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden =>
-                        new DecisionException("Decision rejected authentication or inference permissions.", 502),
-                    HttpStatusCode.ServiceUnavailable => new DecisionException("Decision is unavailable.", 503),
+                        new DecisionException("The selected model rejected authentication or inference permissions.", 502),
+                    HttpStatusCode.ServiceUnavailable => new DecisionException("The selected model is unavailable.", 503),
                     HttpStatusCode.GatewayTimeout or HttpStatusCode.RequestTimeout =>
-                        new DecisionException("Decision timed out.", 504),
-                    _ => new DecisionException($"Decision returned HTTP {(int)response.StatusCode}.")
+                        new DecisionException("The selected model timed out.", 504),
+                    _ => new DecisionException($"The selected model returned HTTP {(int)response.StatusCode}.")
                 };
             }
             using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-            var result = DecisionResponseMapper.Map(payload.RootElement, state.Sequence, timer.ElapsedMilliseconds, options.Deployment);
+            var result = isGpt
+                ? GptProtocol.Map(payload.RootElement, state.Sequence, timer.ElapsedMilliseconds, options.Deployment)
+                : DecisionResponseMapper.Map(payload.RootElement, state.Sequence, timer.ElapsedMilliseconds, options.Deployment);
             if (payload.RootElement.TryGetProperty("model", out var model) &&
                 model.ValueKind == JsonValueKind.String && model.GetString() is { Length: > 0 and <= 256 } responseModel)
             {
@@ -123,7 +142,7 @@ public sealed class DecisionClient(HttpClient http, DecisionTokenProvider tokens
         catch (OperationCanceledException ex)
         {
             MarkFailure("timeout");
-            throw new DecisionException("Decision timed out.", 504, ex);
+            throw new DecisionException("The selected model timed out.", 504, ex);
         }
         catch (HttpRequestException ex)
         {
@@ -131,14 +150,14 @@ public sealed class DecisionClient(HttpClient http, DecisionTokenProvider tokens
                 ? "response_too_large" : "connection_error");
             if (ex.HttpRequestError == HttpRequestError.ConfigurationLimitExceeded)
             {
-                throw new DecisionException("Decision returned an oversized response.", 502, ex);
+                throw new DecisionException("The selected model returned an oversized response.", 502, ex);
             }
-            throw new DecisionException("Unable to reach Decision.", 503, ex);
+            throw new DecisionException("Unable to reach the selected model.", 503, ex);
         }
-        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException or OverflowException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException or OverflowException or KeyNotFoundException or ArgumentOutOfRangeException)
         {
             MarkFailure("invalid_response");
-            throw new DecisionException("Decision returned an invalid response.", inner: ex);
+            throw new DecisionException("The selected model returned an invalid response.", inner: ex);
         }
         catch (DecisionException)
         {

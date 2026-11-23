@@ -41,18 +41,86 @@ Per raccontare la demo:
    alla [vista](Pong.Web/wwwroot/ui/pong-view.mjs) e agli
    [input](Pong.Web/wwwroot/ui/pong-input.mjs).
 5. Tenere la [fisica](Pong.Web/wwwroot/game/physics.mjs) separata dal modello:
-   il gioco avanza senza attendere l'inferenza.
+   in tempo reale il gioco avanza senza attendere l'inferenza; a passi attende il modello.
 
 Il controller JavaScript non e un secondo agente AI: gestisce le richieste
 all'API senza dipendere dalla UI. L'inferenza passa dall'`AIAgent` Microsoft
 Agent Framework sul server. Non sono introdotti previsione locale della
-traiettoria o controller alternativi; Decision resta responsabile delle scelte.
+traiettoria o controller alternativi; il modello selezionato resta responsabile delle scelte.
 Accelerazione del 10% per colpo, limite di 600 px/s e comportamento restano invariati.
+
+### Scelta del modello e confronto
+
+Prima di **INIZIA PARTITA**, la combo **MODELLO** permette di scegliere
+Decision 1.1 oppure il deployment GPT configurato. La selezione resta bloccata
+anche durante la pausa: usare **NUOVA PARTITA** per cambiare modello.
+Il cambio azzera punteggi, storico e statistiche e richiede una nuova preparazione.
+Entrambi passano dallo stesso `PongDecisionAgent : AIAgent` di Microsoft Agent
+Framework, con identici stato, osservazioni, istruzioni di controllo e regole fisiche
+a parita di modalita. `playMode` comunica al modello la semantica temporale scelta.
+Decision usa il protocollo nativo SystemOne; GPT usa Chat Completions con output
+JSON Schema strict e nessuna conversazione persistente (`store: false`).
+GPT invia messaggi system/user e legge `choices[0].message.content`; i token
+arrivano da `prompt_tokens`/`completion_tokens`, poi vengono normalizzati nello
+stesso risultato usato da Decision. Non c'e fallback alla Responses API.
+Cambiare API non garantisce una latenza inferiore: va misurata sul deployment.
+Le probabilita GPT sono stime dichiarate dal modello, non logprobs o probabilita
+calibrate; non sono direttamente confrontabili con quelle native di Decision.
+
+Il pannello mostra token input/output/totali e medie del tempo HTTP e del tempo
+totale browser/API della partita corrente. Sono incluse le risposte valide anche
+se troppo lente per essere applicate; preparazione e test diagnostico sono esclusi.
+Le risposte senza usage sono segnalate, non considerate consumo zero.
+Richieste annullate, errori o risposte fuori turno possono consumare token non
+conteggiati: questi numeri non sostituiscono la fatturazione Foundry.
+L'output usage GPT include i reasoning token nel conteggio riportato dal provider.
+Il tempo HTTP include il buffering della risposta ma esclude autenticazione e
+parsing; il totale browser/API li include. I limiti restano uguali per i due
+modelli: timeout HTTP 8 secondi; in tempo reale le azioni scadono dopo 350 ms.
+Il browser attende fino a 45 secondi per preparazione/test (inclusa la prima
+autenticazione, limitata a 30 secondi), e fino a 10 secondi per le chiamate di gioco.
+Partite interattive diverse non costituiscono un benchmark deterministico.
+
+### Modelli lenti: modalita a passi e test
+
+La combo **MODALITA** e disponibile prima della partita per entrambi i modelli.
+**Tempo reale** resta il comportamento predefinito: il campo continua a muoversi
+durante la chiamata e una risposta oltre 350 ms viene scartata. Luna puo impiegare
+secondi: la pallina puo superare la racchetta prima che arrivi una risposta,
+provocando l'annullamento della richiesta. Rallentare solo la pallina non
+risolverebbe la scadenza reale di 350 ms.
+
+Con **A passi / modelli lenti**, durante il turno del modello l'intero campo
+(entrambe le racchette incluse) resta fermo mentre si attende l'inferenza.
+La scelta valida viene poi applicata per **100 ms di simulazione**, al massimo,
+prima di inviare lo stato aggiornato. Fuori turno il gioco avanza normalmente.
+Colpi, punti e pause interrompono l'azione; non si applicano risposte di vecchi turni.
+Le velocita fisiche, l'accelerazione e la policy restano invariate: non si calcola
+localmente una mossa. Lo storico usa il tempo simulato; la latenza riportata e
+sempre tempo reale e non viene usata per proiettare movimento durante l'attesa.
+Modello e modalita restano bloccati anche in pausa fino a **NUOVA PARTITA**.
+Confrontare i due modelli nella stessa modalita; i risultati a passi non sono
+un benchmark di reattivita in tempo reale.
+
+**TEST MODELLO / CAMPO FERMO** esegue una sola inferenza prima della partita,
+senza far partire la pallina. Il pannello mostra azione, probabilita, token,
+deployment e durata HTTP/totale nel risultato espandibile. Non avvia richieste
+successive e non sostituisce la preparazione iniziale della partita.
+Errori, timeout e annullamenti del test sono visibili.
+
+**CHIAMATE / CICLO COMPLETO** mostra subito ogni invio con il nome del modello,
+il tempo di attesa aggiornato e l'esito finale, incluse richieste annullate
+prima della risposta HTTP, timeout ed errori di rete. Una chiamata annullata
+non viene contata come risposta ricevuta. Lo storico mantiene le ultime otto
+chiamate, separato da quello delle risposte, e si azzera a nuova partita.
+L'annullamento locale non dimostra che l'inferenza remota non sia stata eseguita
+o fatturata.
 
 ## Avvio
 
 Prerequisiti: .NET 10 SDK e accesso a un deployment **Microsoft-Decision-1.1**.
-Non occorrono Docker, database o un modello chat.
+Per il confronto GPT serve anche il deployment chat configurato sotto.
+Non occorrono Docker o database; il percorso Decision non richiede un modello chat.
 
 Dalla root del repository:
 
@@ -70,7 +138,7 @@ dotnet run --project .\SRC\Pong\Pong.Web
 ```
 
 Il caricamento della pagina legge solo la configurazione; le inferenze iniziano
-premendo **INIZIA PARTITA** e possono consumare token a pagamento.
+premendo **INIZIA PARTITA** oppure **TEST MODELLO** e possono consumare token a pagamento.
 Al primo avvio della pagina compare **WAITING / DECISION**: una chiamata reale
 prepara autenticazione e modello mentre il campo resta fermo al servizio.
 La partita inizia solo dopo una risposta valida, non dopo un timer.
@@ -79,7 +147,7 @@ ma non muove la racchetta e non alimenta la stima di latenza degli scambi.
 Pausa, cambio scheda e reset annullano l'attesa; errori e timeout restano
 visibili e richiedono un nuovo avvio manuale.
 Una volta pronto, il modello non viene preparato di nuovo per pause o nuove
-partite nella stessa pagina. Ricaricando la pagina si ripete la preparazione.
+partite nella stessa pagina, salvo cambio modello. Ricaricando la pagina si ripete la preparazione.
 
 ### Configurazione
 
@@ -87,6 +155,18 @@ Il servizio usa `Decision:Endpoint` (URL HTTPS completo che termina con
 `/providers/microsoft/v1/systemone`) e `Decision:Deployment` (nome esatto del
 deployment). I valori iniziali sono gli stessi della demo ChatBot.
 Le configurazioni delle due app restano indipendenti.
+
+Per GPT sono configurati `Gpt:Deployment` = `gpt-6-luna` e `Gpt:Endpoint` =
+`https://agenteinformativo.services.ai.azure.com/openai/v1/chat/completions`.
+Il deployment deve supportare Chat Completions e gli output strutturati.
+Il deployment deve gia esistere: l'app non lo crea e non verifica la disponibilita
+al caricamento della pagina. Un nome errato o permessi mancanti producono un errore
+visibile alla preparazione, senza ripiegare su Decision.
+Per disabilitare GPT, impostare `Gpt:Deployment` a stringa vuota: la relativa
+opzione rimane visibile ma non selezionabile.
+GPT usa lo stesso token Entra in cache, oppure una chiave separata `Gpt:ApiKey`
+nei user-secrets di Pong.Web. Sono supportate `Gpt__Endpoint`, `Gpt__Deployment`
+e `Gpt__ApiKey`; nessuna credenziale viene inviata al browser.
 
 L'autenticazione predefinita e `DefaultAzureCredential`, con scope
 `https://cognitiveservices.azure.com/.default`.
@@ -123,7 +203,7 @@ I user-secrets di ChatBot non vengono copiati.
 - Perdere il focus o cambiare scheda mette in pausa gioco e nuove richieste.
 - Dopo ogni punto la palla torna al centro e il nuovo servizio parte subito,
   senza conto alla rovescia. Il primo servizio attende solo la preparazione AI.
-- Durante la partita la fisica non attende mai un'inferenza: palla e comandi
+- In **tempo reale** la fisica non attende mai un'inferenza: palla e comandi
   umani continuano durante l'elaborazione. Una risposta lenta puo far perdere
   il punto al modello, ma non mette il campo in pausa.
 
@@ -164,8 +244,9 @@ dalla piu vecchia alla piu recente, campionate ogni almeno 40 ms; lo snapshot
 della richiesta viene sempre incluso anche se cade prima del prossimo campione.
 Ogni osservazione contiene `timestampMilliseconds`, `ballX`, `ballY`,
 `velocityX`, `velocityY` e `paddleY`. L'ultimo campione coincide esattamente
-con lo stato corrente e con `observedAtMilliseconds`. I timestamp sono
-millisecondi monotoni del browser, non orari UTC.
+con lo stato corrente e con `observedAtMilliseconds`. In tempo reale i timestamp
+sono millisecondi monotoni del browser; a passi sono millisecondi di simulazione
+che non avanzano durante l'inferenza. Non sono orari UTC.
 Il buffer contiene solo l'ultimo tratto osservato: si azzera a un cambio di
 velocita/rimbalzo, fuori turno, al punto, in pausa e a nuova partita. I campioni
 piu vecchi di un secondo vengono rimossi. Non si aggiungono posizioni future,
@@ -174,7 +255,7 @@ fit, intercetti o traiettorie calcolati dal programma.
 `estimatedResponseMilliseconds` comunica al modello la latenza totale misurata:
 e `null` prima della prima risposta valida; poi segue una media esponenziale
 con peso 25% all'ultima misura e 75% alla stima precedente. La nuova partita
-la azzera. **La compensazione e interamente affidata a Decision**: riceve
+la azzera. In tempo reale **la compensazione e interamente affidata al modello**: riceve
 la misura e lo storico del movimento della racchetta, non una proiezione
 locale delle posizioni. Le istruzioni gli chiedono di valutare da solo i
 rimbalzi, il tempo di risposta e quando `stay` evita un superamento.
@@ -200,14 +281,14 @@ Le richieste pendenti sono annullate e le risposte del turno precedente ignorate
 Questa condizione e verificata anche dall'API/agente/client: uno stato fuori
 turno e rifiutato senza autenticazione o chiamata al modello.
 
-Il protocollo Decision non e Chat Completions: l'agente usa un client HTTP
+Il protocollo Decision non e Chat Completions: per Decision l'agente usa un client HTTP
 tipizzato per l'endpoint nativo, con richieste bufferizzate e `Content-Length`.
-Non si aggiunge un modello generativo e non si inventano spiegazioni.
+Il percorso Decision non richiede un modello generativo e non inventa spiegazioni.
 Riferimenti:
 [API ufficiale Decision](https://learn.microsoft.com/azure/foundry/foundry-models/how-to/use-foundry-models-microsoft-decision)
 e [esempio Microsoft di AIAgent con Decision](https://github.com/microsoft/Generative-AI-for-beginners-dotnet/tree/main/samples/CoreSamples/DecisionAgent-01-FoundryHosted).
 
-### Latenza, costi ed errori
+### Latenza, costi ed errori in tempo reale
 
 - Al massimo una richiesta in corso per pagina, avviata non piu spesso di una
   ogni **100 ms** durante il solo turno del modello (fino a **10 richieste/s**,

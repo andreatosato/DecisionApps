@@ -18,6 +18,7 @@ internal sealed class TestHost : WebApplicationFactory<Program>
     public bool UseApiKey { get; init; }
     public string EnvironmentName { get; init; } = "Testing";
     public string Endpoint { get; init; } = "https://offline.invalid/providers/microsoft/v1/systemone";
+    public bool EnableGpt { get; init; }
     public Action<IServiceCollection>? CustomizeServices { get; init; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -29,6 +30,9 @@ internal sealed class TestHost : WebApplicationFactory<Program>
                 ["Decision:Endpoint"] = Endpoint,
                 ["Decision:Deployment"] = "Decision-1.1",
                 ["Decision:ApiKey"] = UseApiKey ? "offline-test-key" : "",
+                ["Gpt:Deployment"] = EnableGpt ? "gpt-6-luna" : "",
+                ["Gpt:Endpoint"] = "https://offline.invalid/openai/v1/chat/completions",
+                ["Gpt:ApiKey"] = UseApiKey ? "offline-gpt-key" : "",
                 ["OTEL_EXPORTER_OTLP_ENDPOINT"] = ""
             }));
         builder.ConfigureServices(services =>
@@ -75,6 +79,13 @@ internal sealed class FakeCredential : TokenCredential
 
 internal sealed class FakeHandler : HttpMessageHandler
 {
+    public const string ValidGptResponse = """
+        {"model":"gpt-6-luna",
+         "choices":[{"index":0,"finish_reason":"stop","message":{"role":"assistant","refusal":null,
+          "content":"{\"type\":\"choice\",\"choice\":\"up\",\"probabilities\":{\"up\":0.8,\"down\":0.2,\"stay\":0}}"}}],
+         "usage":{"prompt_tokens":123,"completion_tokens":22,"total_tokens":145,
+          "completion_tokens_details":{"reasoning_tokens":20}}}
+        """;
     public const string ValidResponse = """
         {"answers":{"action":{"type":"choice","choice":"up","probabilities":{"up":0.8,"down":0.2,"stay":0}}},
          "usage":{"input_tokens":123,"output_tokens":2,"total_tokens":125}}

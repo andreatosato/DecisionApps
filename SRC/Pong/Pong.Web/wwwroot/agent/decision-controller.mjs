@@ -13,6 +13,12 @@ export class DecisionController {
   decisions = 0;
   observations = [];
   estimatedResponseMilliseconds = null;
+  model = "decision";
+  models = [];
+  playMode = "realtime";
+  stepRemaining = 0;
+  requestId = 0;
+  finishRequest = null;
 
   constructor(onUpdate, onError) {
     this.onUpdate = onUpdate;
@@ -26,22 +32,36 @@ export class DecisionController {
     if (typeof configuration.deployment !== "string" || !configuration.deployment.trim()) {
       throw new Error("Configurazione del deployment non valida.");
     }
+    if (!Array.isArray(configuration.models) || !configuration.models.some(model => model.id === "decision" && model.available)) {
+      throw new Error("Configurazione dei modelli non valida.");
+    }
+    this.models = configuration.models;
     return configuration;
   }
 
-  cancel() {
+  selectModel(id) {
+    if (!this.models.some(model => model.id === id && model.available)) {
+      throw new Error("Modello non configurato o non disponibile.");
+    }
+    this.model = id;
+  }
+
+  cancel(reason = "FINE TURNO") {
+    this.finishRequest?.("cancelled", `ANNULLATA: ${reason}`);
+    this.finishRequest = null;
     this.generation++;
     this.request?.abort();
     this.request = null;
     this.direction = 0;
     this.directionExpires = 0;
+    this.stepRemaining = 0;
     this.nextDecision = 0;
     this.observations.length = 0;
     this.onUpdate({ type: "idle" });
   }
 
   reset() {
-    this.cancel();
+    this.cancel("NUOVA PARTITA");
     this.session++;
     this.decisions = 0;
     this.estimatedResponseMilliseconds = null;
@@ -67,8 +87,8 @@ export class DecisionController {
     void this.requestDecision(game, now);
   }
 
-  prepare(game) {
-    return this.requestDecision(game, performance.now(), true);
+  prepare(game, diagnostic = false) {
+    return this.requestDecision(game, performance.now(), true, diagnostic);
   }
 
   captureObservation(game, now, force = false) {
@@ -88,8 +108,9 @@ export class DecisionController {
     if (this.observations.length > 5) this.observations.shift();
   }
 
-  async requestDecision(game, now, preparing = false) {
-    if (!isModelTurn(game) || this.request || now < this.nextDecision) return;
+  async requestDecision(game, now, preparing = false, diagnostic = false) {
+    if (!isModelTurn(game) || this.request) return;
+    if (!preparing && (this.playMode === "steps" ? this.stepRemaining > 0 : now < this.nextDecision)) return;
     if (game.ball.x < RULES.ballRadius || game.ball.x > RULES.width - RULES.ballRadius) return;
     const controller = new AbortController();
     this.request = controller;
@@ -98,19 +119,31 @@ export class DecisionController {
     const session = this.session;
     const sequence = preparing ? 0 : ++this.sequence;
     const started = performance.now();
+    const requestId = ++this.requestId;
     this.captureObservation(game, now, true);
     const state = {
       ...snapshot(game, sequence),
+      model: this.model,
+      playMode: this.playMode,
       history: this.observations.map(point => ({ ...point })),
       observedAtMilliseconds: now,
       estimatedResponseMilliseconds: this.estimatedResponseMilliseconds
     };
     this.nextDecision = now + RULES.decisionSeconds * 1000;
-    this.onUpdate({ type: "request", state });
+    let finished = false;
+    const finish = (status, outcome) => {
+      if (finished) return;
+      finished = true;
+      if (this.session !== session) return;
+      this.onUpdate({ type: "request-end", requestId, status, outcome, elapsed: performance.now() - started });
+    };
+    this.finishRequest = finish;
+    this.onUpdate({ type: "request", state, requestId, started, diagnostic, preparing });
     let received = false;
     let recorded = false;
     const report = (action, state, outcome) => {
       recorded = true;
+      finish(state, outcome);
       if (this.session !== session) return;
       this.onUpdate({ type: "received", sequence, action, state, outcome, elapsed: performance.now() - started });
     };
@@ -119,7 +152,7 @@ export class DecisionController {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state),
-        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)])
+        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(preparing ? 45000 : 10000)])
       });
       received = true;
       if (!response.ok) {
@@ -138,23 +171,30 @@ export class DecisionController {
         this.estimatedResponseMilliseconds = this.estimatedResponseMilliseconds === null ? age :
           this.estimatedResponseMilliseconds * 0.75 + age * 0.25;
       }
-      const applied = !preparing && age <= MAX_DECISION_AGE_MS;
+      const applied = !preparing && (this.playMode === "steps" || age <= MAX_DECISION_AGE_MS);
       this.direction = applied ? (result.action === "up" ? -1 : result.action === "down" ? 1 : 0) : 0;
-      this.directionExpires = applied ? started + MAX_DECISION_AGE_MS : 0;
-      this.onUpdate({ type: "decision", result, age, applied, preparing, count: this.decisions });
+      this.directionExpires = applied && this.playMode === "realtime" ? started + MAX_DECISION_AGE_MS : 0;
+      this.stepRemaining = applied && this.playMode === "steps" ? RULES.decisionSeconds : 0;
+      this.onUpdate({ type: "decision", result, age, applied, preparing, diagnostic, count: this.decisions });
       report(result.action, preparing ? "prepared" : applied ? "applied" : "discarded",
-        preparing ? "PRONTA: PREPARAZIONE" : applied ? "APPLICATA" : "SCARTATA: SUPERATA");
+        diagnostic ? "TEST: RISPOSTA RICEVUTA" :
+          preparing ? "PRONTA: PREPARAZIONE" : applied ? "APPLICATA" : "SCARTATA: SUPERATA");
       return true;
     } catch (error) {
+      finish(controller.signal.aborted ? "cancelled" : "error",
+        controller.signal.aborted ? "ANNULLATA" : error?.name === "TimeoutError" ? "TIMEOUT" :
+          `ERRORE: ${error instanceof Error ? error.message : "Chiamata non riuscita"}`);
       if (received && !recorded) {
         report(null, controller.signal.aborted ? "discarded" : "error",
           controller.signal.aborted ? "SCARTATA: ANNULLATA" : "ERRORE: RISPOSTA NON VALIDA");
       }
       if (controller.signal.aborted || this.generation !== generation) return;
-      this.onError(error instanceof Error ? error.message : "Errore durante la chiamata a Decision.");
+      this.onError(error?.name === "TimeoutError" ? "Tempo scaduto in attesa del modello. Riprova manualmente." :
+        error instanceof Error ? error.message : "Errore durante la chiamata al modello.");
     } finally {
       if (this.request === controller) {
         this.request = null;
+        this.finishRequest = null;
         this.onUpdate({ type: "settled" });
       }
     }

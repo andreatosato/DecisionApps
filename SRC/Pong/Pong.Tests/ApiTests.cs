@@ -13,6 +13,123 @@ namespace Pong.Tests;
 
 public sealed class ApiTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SelectedGptUsesChatCompletionsThroughTheSameAgentAndReportsUsage(bool apiKey)
+    {
+        using var factory = new TestHost { EnableGpt = true, UseApiKey = apiKey };
+        factory.Handler.ResponseBody = FakeHandler.ValidGptResponse;
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions",
+            TestHost.ObservedState() with { Model = "gpt" });
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<DecisionResult>();
+        Assert.Equal("gpt-6-luna", result!.Deployment);
+        Assert.Equal("up", result.Action);
+        Assert.Equal(new TokenUsage(123, 22, 145), result.Usage);
+        Assert.Equal("https://offline.invalid/openai/v1/chat/completions", factory.Handler.RequestUri);
+        Assert.Equal(apiKey ? "offline-gpt-key" : null, factory.Handler.ApiKey);
+        Assert.Equal(apiKey ? null : "Bearer offline-token", factory.Handler.Authorization);
+        using var payload = JsonDocument.Parse(factory.Handler.RequestBody!);
+        var root = payload.RootElement;
+        Assert.Equal("gpt-6-luna", root.GetProperty("model").GetString());
+        Assert.False(root.GetProperty("store").GetBoolean());
+        var format = root.GetProperty("response_format");
+        Assert.Equal("json_schema", format.GetProperty("type").GetString());
+        Assert.True(format.GetProperty("json_schema").GetProperty("strict").GetBoolean());
+        var messages = root.GetProperty("messages");
+        Assert.Equal(2, messages.GetArrayLength());
+        Assert.Equal("system", messages[0].GetProperty("role").GetString());
+        Assert.Contains("history", messages[0].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+        using var input = JsonDocument.Parse(messages[1].GetProperty("content").GetString()!);
+        Assert.Equal(2, input.RootElement.GetProperty("history").GetArrayLength());
+        Assert.Equal(145, input.RootElement.GetProperty("estimatedResponseMilliseconds").GetDouble());
+        Assert.False(root.TryGetProperty("questions", out _));
+        Assert.False(root.TryGetProperty("input", out _));
+        Assert.False(root.TryGetProperty("max_output_tokens", out _));
+        Assert.Equal(1, factory.Handler.Calls);
+    }
+
+    [Theory]
+    [InlineData("unknown", 400)]
+    [InlineData("gpt", 503)]
+    public async Task UnavailableModelNeverFallsBackToDecision(string model, int status)
+    {
+        using var factory = new TestHost();
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions", TestHost.State() with { Model = model });
+        Assert.Equal(status, (int)response.StatusCode);
+        Assert.Equal(0, factory.Handler.Calls);
+        Assert.Equal(0, factory.Credential.Calls);
+    }
+
+    [Theory]
+    [InlineData("""{"choices":[]}""")]
+    [InlineData("""{"choices":[{"finish_reason":"length","message":{"role":"assistant","content":"{}"}}]}""")]
+    [InlineData("""{"choices":[{"finish_reason":"stop","message":{"role":"assistant","refusal":"No","content":null}}]}""")]
+    [InlineData("""{"choices":[{"finish_reason":"stop","message":{"role":"assistant","content":"not JSON"}}]}""")]
+    [InlineData("""{"choices":[{"finish_reason":"stop","message":{"role":"user","content":"{}"}}]}""")]
+    [InlineData("""{"error":{"code":"server_error"},"choices":[]}""")]
+    public async Task InvalidGptResponsesAreExplicitErrorsWithoutFallback(string body)
+    {
+        using var factory = new TestHost { EnableGpt = true };
+        factory.Handler.ResponseBody = body;
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions", TestHost.State() with { Model = "gpt" });
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+        Assert.Equal(1, factory.Handler.Calls);
+        Assert.DoesNotContain("\"action\"", await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("\"prompt_tokens\":123", "\"prompt_tokens\":-1")]
+    [InlineData("\"completion_tokens\":22", "\"completion_tokens\":null")]
+    [InlineData("\"total_tokens\":145", "\"total_tokens\":146")]
+    public async Task InvalidChatTokenUsageCannotBecomeValidMatchStatistics(string original, string replacement)
+    {
+        using var factory = new TestHost { EnableGpt = true };
+        factory.Handler.ResponseBody = FakeHandler.ValidGptResponse.Replace(original, replacement);
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions", TestHost.State() with { Model = "gpt" });
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+        Assert.Equal(1, factory.Handler.Calls);
+    }
+
+    [Theory]
+    [InlineData("decision")]
+    [InlineData("gpt")]
+    public async Task StepModeReachesBothModelsWithExplicitFrozenInferenceInstructions(string model)
+    {
+        using var factory = new TestHost { EnableGpt = true };
+        factory.Handler.ResponseBody = model == "gpt" ? FakeHandler.ValidGptResponse : FakeHandler.ValidResponse;
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions",
+            TestHost.ObservedState() with { Model = model, PlayMode = "steps" });
+        response.EnsureSuccessStatusCode();
+        using var payload = JsonDocument.Parse(factory.Handler.RequestBody!);
+        var root = payload.RootElement;
+        var instructions = model == "gpt"
+            ? root.GetProperty("messages")[0].GetProperty("content").GetString()
+            : root.GetProperty("questions").GetProperty("action").GetProperty("instructions").GetString();
+        Assert.Contains("entire court is frozen during inference", instructions);
+        using var forwarded = JsonDocument.Parse(model == "gpt"
+            ? root.GetProperty("messages")[1].GetProperty("content").GetString()!
+            : root.GetProperty("state").GetRawText());
+        Assert.Equal("steps", forwarded.RootElement.GetProperty("playMode").GetString());
+    }
+
+    [Fact]
+    public async Task UnknownPlayModeIsRejectedBeforeInference()
+    {
+        using var factory = new TestHost();
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions", TestHost.State() with { PlayMode = "unknown" });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(0, factory.Handler.Calls);
+    }
+
     [Fact]
     public async Task AgentReceivesObservedHistoryAndMeasuredLatencyAndCanChooseStay()
     {
@@ -277,9 +394,13 @@ public sealed class ApiTests
         var configuration = await client.GetStringAsync("/api/configuration");
         Assert.DoesNotContain("offline-test-key", configuration);
         using var document = JsonDocument.Parse(configuration);
-        Assert.Equal(2, document.RootElement.EnumerateObject().Count());
+        Assert.Equal(3, document.RootElement.EnumerateObject().Count());
         Assert.Equal("API key", document.RootElement.GetProperty("authentication").GetString());
         Assert.Equal("Decision-1.1", document.RootElement.GetProperty("deployment").GetString());
+        var models = document.RootElement.GetProperty("models");
+        Assert.Equal(2, models.GetArrayLength());
+        Assert.False(models[1].GetProperty("available").GetBoolean());
+        Assert.DoesNotContain("offline-gpt-key", configuration);
     }
 
     [Fact]

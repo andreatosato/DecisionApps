@@ -1,4 +1,4 @@
-import { advanceGame, createGame } from "./game/physics.mjs";
+import { advanceGame, createGame, isModelTurn } from "./game/physics.mjs";
 import { DecisionController } from "./agent/decision-controller.mjs";
 import { PongInput } from "./ui/pong-input.mjs";
 import { PongView } from "./ui/pong-view.mjs";
@@ -9,8 +9,10 @@ class PongApp {
   configured = false;
   configLoading = false;
   ready = false;
+  matchStarted = false;
   preparation = null;
   previousFrame = performance.now();
+  simulationMilliseconds = 0;
 
   constructor() {
     this.view = new PongView();
@@ -22,6 +24,9 @@ class PongApp {
       toggle: () => this.toggle(),
       isRunning: () => this.running
     });
+    this.view.elements["model-select"].addEventListener("change", () => this.selectModel());
+    this.view.elements["play-mode"].addEventListener("change", () => this.selectPlayMode());
+    this.view.elements["test-model"].addEventListener("click", () => this.testModel());
     if (this.view.context) {
       requestAnimationFrame(this.frame);
       void this.loadConfiguration();
@@ -33,11 +38,58 @@ class PongApp {
 
   reset() {
     this.running = false;
+    this.matchStarted = false;
     this.preparation = null;
     this.input.clear();
     this.decision.reset();
     this.game = createGame();
+    this.simulationMilliseconds = 0;
     this.view.reset(this.game, this.configured);
+    this.view.showPlayMode(this.decision.playMode);
+  }
+
+  selectModel() {
+    if (this.preparation || (this.matchStarted && !this.game.winner)) {
+      this.view.elements["model-select"].value = this.decision.model;
+      return;
+    }
+    try {
+      this.decision.selectModel(this.view.elements["model-select"].value);
+      this.ready = false;
+      this.view.showModel(this.decision.models.find(model => model.id === this.decision.model));
+      this.reset();
+    } catch (error) {
+      this.view.elements["model-select"].value = this.decision.model;
+      this.showError(error instanceof Error ? error.message : "Selezione del modello non valida.");
+    }
+  }
+
+  selectPlayMode() {
+    const select = this.view.elements["play-mode"];
+    if (this.preparation || (this.matchStarted && !this.game.winner)) {
+      select.value = this.decision.playMode;
+      return;
+    }
+    if (!["realtime", "steps"].includes(select.value)) {
+      select.value = this.decision.playMode;
+      this.showError("Modalita di gioco non valida.");
+      return;
+    }
+    this.decision.playMode = select.value;
+    this.reset();
+  }
+
+  async testModel() {
+    if (!this.configured || this.preparation || (this.matchStarted && !this.game.winner)) return;
+    if (this.game.winner) this.reset();
+    this.decision.cancel();
+    const preparation = this.preparation = {};
+    this.view.showTesting();
+    const tested = await this.decision.prepare(this.game, true);
+    if (!tested || this.preparation !== preparation) return;
+    this.preparation = null;
+    this.decision.cancel("TEST COMPLETATO");
+    this.view.showTestCompleted();
   }
 
   async start() {
@@ -49,6 +101,7 @@ class PongApp {
     if (this.game.winner) this.reset();
     this.decision.cancel();
     this.input.clear();
+    this.matchStarted = true;
     if (!this.ready) {
       const preparation = this.preparation = {};
       this.view.showPreparing();
@@ -68,7 +121,8 @@ class PongApp {
     this.running = false;
     this.preparation = null;
     this.input.clear();
-    this.decision.cancel();
+    this.decision.cancel("PAUSA");
+    if (!this.matchStarted) this.view.setSelectionLocked(false);
     this.view.showPaused(reason);
   }
 
@@ -112,14 +166,23 @@ class PongApp {
     this.previousFrame = now;
     if (this.running) {
       const rally = this.game.rally;
-      const playerDirection = this.input.getDirection(this.game.playerY, dt);
-      advanceGame(this.game, dt, playerDirection, this.decision.getDirection(now));
+      const steps = this.decision.playMode === "steps";
+      let seconds = dt;
+      if (steps && isModelTurn(this.game)) {
+        this.decision.update(this.game, this.simulationMilliseconds);
+        seconds = Math.min(seconds, this.decision.stepRemaining);
+        this.decision.stepRemaining = Math.max(0, this.decision.stepRemaining - seconds);
+        if (this.decision.stepRemaining < 1e-9) this.decision.stepRemaining = 0;
+      }
+      const playerDirection = seconds > 0 ? this.input.getDirection(this.game.playerY, seconds) : 0;
+      advanceGame(this.game, seconds, playerDirection, this.decision.getDirection(now));
+      this.simulationMilliseconds += seconds * 1000;
       if (this.game.rally !== rally) {
         this.decision.cancel();
         this.view.announceScore(this.game);
       }
       if (this.game.winner) this.finish();
-      else this.decision.update(this.game, now);
+      else this.decision.update(this.game, steps ? this.simulationMilliseconds : now);
     }
     this.view.render(this.game, now);
     requestAnimationFrame(this.frame);

@@ -3,7 +3,7 @@ namespace Pong.Web.Contracts;
 public sealed record DecisionRequest(
     long Sequence, Arena Arena, Ball Ball, Paddle Paddle, double DecisionIntervalSeconds,
     IReadOnlyList<Observation>? History = null, double? ObservedAtMilliseconds = null,
-    double? EstimatedResponseMilliseconds = null);
+    double? EstimatedResponseMilliseconds = null, string Model = "decision", string PlayMode = "realtime");
 public sealed record Arena(double Width, double Height);
 public sealed record Ball(double X, double Y, double VelocityX, double VelocityY, double Radius);
 public sealed record Paddle(double X, double Y, double Width, double Height, double Speed);

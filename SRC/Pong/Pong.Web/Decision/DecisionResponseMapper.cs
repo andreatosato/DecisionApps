@@ -9,7 +9,18 @@ public static class DecisionResponseMapper
     {
         if (payload.ValueKind != JsonValueKind.Object ||
             !payload.TryGetProperty("answers", out var answers) || answers.ValueKind != JsonValueKind.Object ||
-            !answers.TryGetProperty("action", out var answer) || answer.ValueKind != JsonValueKind.Object ||
+            !answers.TryGetProperty("action", out var answer))
+        {
+            throw new DecisionException("Decision returned an invalid answer.");
+        }
+        return MapAnswer(answer, payload, sequence, elapsed, deployment);
+    }
+
+    internal static DecisionResult MapAnswer(
+        JsonElement answer, JsonElement payload, long sequence, long elapsed, string deployment,
+        string inputTokensProperty = "input_tokens", string outputTokensProperty = "output_tokens")
+    {
+        if (answer.ValueKind != JsonValueKind.Object ||
             !answer.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String || type.GetString() != "choice" ||
             !answer.TryGetProperty("choice", out var choice) || choice.ValueKind != JsonValueKind.String ||
             choice.GetString() is not ("up" or "down" or "stay") ||
@@ -33,8 +44,8 @@ public static class DecisionResponseMapper
         if (payload.TryGetProperty("usage", out var rawUsage) && rawUsage.ValueKind != JsonValueKind.Null)
         {
             if (rawUsage.ValueKind != JsonValueKind.Object ||
-                !rawUsage.TryGetProperty("input_tokens", out var inputElement) || !TryTokenCount(inputElement, out var input) ||
-                !rawUsage.TryGetProperty("output_tokens", out var outputElement) || !TryTokenCount(outputElement, out var output) ||
+                !rawUsage.TryGetProperty(inputTokensProperty, out var inputElement) || !TryTokenCount(inputElement, out var input) ||
+                !rawUsage.TryGetProperty(outputTokensProperty, out var outputElement) || !TryTokenCount(outputElement, out var output) ||
                 input > long.MaxValue - output)
             {
                 throw new DecisionException("Decision returned invalid token usage.");

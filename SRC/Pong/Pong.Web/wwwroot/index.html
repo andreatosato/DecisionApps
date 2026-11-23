@@ -19,7 +19,7 @@
 
     <section class="intro" aria-labelledby="title">
       <div><p class="eyebrow"><span class="signal" aria-hidden="true"></span> UN CLASSICO. UN NUOVO AVVERSARIO.</p><h1 id="title">PONG<span class="title-dot">.</span></h1></div>
-      <p class="intro-copy">Tu hai i riflessi.<br>Il tuo avversario ha <strong>Decision 1.1.</strong><br><span>Posizione, velocita, una decisione alla volta.</span></p>
+      <p class="intro-copy">Tu hai i riflessi.<br>Il tuo avversario ha <strong id="intro-model">Decision 1.1.</strong><br><span>Posizione, velocita, una decisione alla volta.</span></p>
     </section>
 
     <div class="game-layout">
@@ -34,31 +34,44 @@
             <button type="button" class="primary" id="overlay-start" disabled>CARICAMENTO...</button>
           </div>
         </div>
-        <div class="court-legend"><span><span class="player-dot"></span> TU <span class="muted">/ SINISTRA</span></span><span>PRIMO A <strong>7</strong></span><span>DECISION 1.1 <span class="model-dot"></span></span></div>
+        <div class="court-legend"><span><span class="player-dot"></span> TU <span class="muted">/ SINISTRA</span></span><span>PRIMO A <strong>7</strong></span><span><span id="opponent-label">DECISION 1.1</span> <span class="model-dot"></span></span></div>
         <div class="game-toolbar">
           <div class="buttons"><button type="button" class="primary" id="start" disabled>INIZIA PARTITA <span aria-hidden="true">&#8599;</span></button><button type="button" id="pause" disabled>PAUSA</button><button type="button" id="reset" disabled aria-label="Azzera punteggi e inizia una nuova partita">NUOVA PARTITA</button></div>
           <span class="keyboard-hint"><kbd>W</kbd> <kbd>S</kbd> / <kbd>&uarr;</kbd> <kbd>&darr;</kbd></span>
         </div>
-        <p class="help">Muovi la racchetta con la tastiera o trascina sul campo. <kbd>SPAZIO</kbd> pausa. Decision agisce solo sulla palla in arrivo nella meta destra. Velocita +10% a ogni colpo, fino a 600 px/s.</p>
+        <p class="help">Muovi la racchetta con la tastiera o trascina sul campo. <kbd>SPAZIO</kbd> pausa. Il modello agisce solo sulla palla in arrivo nella meta destra. In A PASSI il campo attende l'inferenza. Velocita +10% a ogni colpo, fino a 600 px/s.</p>
         <p class="error" id="error" role="alert" hidden></p>
         <p class="sr-only" id="score-announcement" role="status" aria-live="polite">Punteggio: tu 0, Decision 0.</p>
       </section>
 
       <aside class="inspector" aria-labelledby="inspector-title">
         <div class="inspector-header"><h2 id="inspector-title">02 / DENTRO L'AGENTE</h2><span class="live-dot" id="live-dot" aria-hidden="true"></span></div>
-        <div class="model-card"><span class="tiny-label">MOTORE DECISIONALE</span><h3>Microsoft<br>Decision 1.1</h3><span class="model-badge">NATIVE SYSTEMONE</span><p id="configuration">Lettura della configurazione...</p></div>
+        <div class="model-card"><label class="tiny-label" for="model-select">MODELLO / PRIMA DELLA PARTITA</label><select id="model-select" disabled aria-describedby="model-help"><option value="decision">Decision 1.1</option></select><h3 id="model-name">Decision 1.1</h3><span class="model-badge" id="model-protocol">NATIVE SYSTEMONE</span><p id="configuration">Lettura della configurazione...</p><p id="model-help">Per cambiare modello o modalita, premi NUOVA PARTITA. GPT richiede un deployment configurato sul server.</p>
+          <label class="tiny-label mode-label" for="play-mode">MODALITA / PRIMA DELLA PARTITA</label>
+          <select id="play-mode" disabled aria-describedby="mode-help"><option value="realtime">Tempo reale</option><option value="steps">A passi / modelli lenti</option></select>
+          <p id="mode-help">Per Luna prova A PASSI: campo fermo durante l'inferenza, latenza reale misurata.</p>
+          <button type="button" id="test-model" disabled>TEST MODELLO / CAMPO FERMO</button>
+          <details class="observation-panel" id="diagnostic-panel"><summary>RISULTATO TEST MODELLO</summary><pre id="diagnostic-result" role="status">Nessun test eseguito.</pre></details>
+        </div>
+        <section class="inspector-section response-monitor" aria-labelledby="request-title">
+          <div class="section-label"><h3 id="request-title">CHIAMATE / CICLO COMPLETO</h3><span id="request-count">0 INVIATE</span></div>
+          <p class="last-update">Tempo ultima chiamata: <span id="request-elapsed">--</span></p>
+          <ol class="response-list" id="request-list" aria-label="Ultime otto chiamate al modello, incluse annullate ed errori"></ol>
+          <p class="response-help">Invio, attesa, esito e annullamento sono visibili anche senza risposta HTTP. Annullata non significa che il provider non abbia consumato token.</p>
+        </section>
         <section class="inspector-section response-monitor" aria-labelledby="response-title">
           <div class="section-label"><h3 id="response-title">RISPOSTE IN ARRIVO</h3><span id="response-count">0 RICEVUTE</span></div>
           <p class="last-update" id="last-update">Nessuna risposta ricevuta</p>
           <ol class="response-list" id="response-list" aria-label="Ultime otto risposte del modello, dalla piu recente"></ol>
           <p class="response-help">Ogni riga e una nuova risposta, anche se la direzione non cambia. Ultime 8; tempi totali browser/API.</p>
         </section>
-        <div class="inspector-section"><div class="section-label"><h3>ULTIMA AZIONE / DECISION</h3><span id="request-state">IN ATTESA</span></div><div class="action" id="action" aria-live="polite"><span id="action-arrow" aria-hidden="true">&mdash;</span><strong id="action-name">IN ATTESA</strong></div><div class="probability"><div><span>SU</span><strong id="up-value">--</strong></div><div class="track"><span id="up-bar"></span></div></div><div class="probability"><div><span>GIU</span><strong id="down-value">--</strong></div><div class="track"><span id="down-bar"></span></div></div><div class="probability"><div><span>FERMO</span><strong id="stay-value">--</strong></div><div class="track"><span id="stay-bar"></span></div></div>
-          <details class="observation-panel"><summary>DATI INVIATI A DECISION</summary><p id="decision-context">Nessuna osservazione inviata.</p><pre id="observation-history"></pre></details>
+        <div class="inspector-section"><div class="section-label"><h3>ULTIMA AZIONE / MODELLO</h3><span id="request-state">IN ATTESA</span></div><div class="action" id="action" aria-live="polite"><span id="action-arrow" aria-hidden="true">&mdash;</span><strong id="action-name">IN ATTESA</strong></div><div class="probability"><div><span>SU</span><strong id="up-value">--</strong></div><div class="track"><span id="up-bar"></span></div></div><div class="probability"><div><span>GIU</span><strong id="down-value">--</strong></div><div class="track"><span id="down-bar"></span></div></div><div class="probability"><div><span>FERMO</span><strong id="stay-value">--</strong></div><div class="track"><span id="stay-bar"></span></div></div>
+          <p id="probability-help" class="response-help">Probabilita restituite da Decision.</p>
+          <details class="observation-panel"><summary>DATI INVIATI AL MODELLO</summary><p id="decision-context">Nessuna osservazione inviata.</p><pre id="observation-history"></pre></details>
         </div>
         <div class="inspector-section"><div class="section-label"><h3>STATO DELLA PALLA</h3><span>LIVE</span></div><dl class="state-grid"><div><dt>POSIZIONE X</dt><dd id="ball-x">480 <small>px</small></dd></div><div><dt>POSIZIONE Y</dt><dd id="ball-y">300 <small>px</small></dd></div><div><dt>VELOCITA X</dt><dd id="ball-vx">-- <small>px/s</small></dd></div><div><dt>VELOCITA Y</dt><dd id="ball-vy">-- <small>px/s</small></dd></div></dl></div>
-        <div class="inspector-section"><dl class="stats"><div><dt>Velocita totale palla</dt><dd id="ball-speed">--</dd></div><div><dt>Tempo HTTP modello</dt><dd id="latency">--</dd></div><div><dt>Tempo risposta totale</dt><dd id="response-time">--</dd></div><div><dt>Decisioni ricevute</dt><dd id="decisions">0</dd></div><div><dt>Token ultima risposta</dt><dd id="tokens">--</dd></div></dl></div>
-        <p class="agent-note"><span aria-hidden="true">&#8627;</span> Solo Decision sceglie <strong>su</strong>, <strong>giu</strong> o <strong>fermo</strong>, usando stato, storico reale e latenza misurata. Nessuna traiettoria o posizione bersaglio calcolata localmente. Dopo il colpo la racchetta torna automaticamente al centro, senza chiamare il modello.</p>
+        <div class="inspector-section"><dl class="stats"><div><dt>Velocita totale palla</dt><dd id="ball-speed">--</dd></div><div><dt>Tempo HTTP modello</dt><dd id="latency">--</dd></div><div><dt>Tempo risposta totale</dt><dd id="response-time">--</dd></div><div><dt>Decisioni ricevute</dt><dd id="decisions">0</dd></div><div><dt>Token ultima risposta</dt><dd id="tokens">--</dd></div><div><dt>Token partita (in / out / tot)</dt><dd id="match-tokens">--</dd></div><div><dt>Media HTTP / totale partita</dt><dd id="match-time">--</dd></div><div><dt>Campioni partita</dt><dd id="match-samples">0</dd></div></dl><p class="response-help">Statistiche delle risposte valide ricevute nella partita, anche superate. Preparazione e test esclusi. Le chiamate annullate o fallite possono consumare token non conteggiati. Non e un rendiconto di fatturazione.</p></div>
+        <p class="agent-note"><span aria-hidden="true">&#8627;</span> Solo il modello selezionato sceglie <strong>su</strong>, <strong>giu</strong> o <strong>fermo</strong>, usando stato, storico reale e latenza misurata. Nessuna traiettoria o posizione bersaglio calcolata localmente. Dopo il colpo la racchetta torna automaticamente al centro, senza chiamare il modello.</p>
       </aside>
     </div>
     <footer><span>ISPIRATO AI CLASSICI ARCADE / GRAFICA 2D ORIGINALE</span><span>Le decisioni usano il deployment reale e possono consumare token.</span></footer>
