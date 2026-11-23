@@ -35,7 +35,7 @@ public sealed class DecisionClient(
             Endpoint = gpt.Endpoint, Deployment = gpt.Deployment, ApiKey = gpt.ApiKey
         } : configuration.Value;
         var provider = isGpt ? "azure.ai.openai" : DecisionTelemetry.ProviderName;
-        var operation = isGpt ? "chat" : DecisionTelemetry.OperationName;
+        var operation = DecisionTelemetry.OperationName;
         var parentActivity = Activity.Current;
         parentActivity?.SetTag("gen_ai.provider.name", provider);
         parentActivity?.SetTag("gen_ai.request.model", options.Deployment);
@@ -81,7 +81,7 @@ public sealed class DecisionClient(
         using var activity = DecisionTelemetry.ModelSource.StartActivity(
             $"{operation} {options.Deployment}", ActivityKind.Client,
             parentContext: default, tags: tags);
-        activity?.SetTag("decision.protocol", isGpt ? "chat_completions" : "systemone");
+        activity?.SetTag("decision.protocol", isGpt ? "decisions" : "systemone");
         activity?.SetTag("pong.play_mode", state.PlayMode);
         var timer = Stopwatch.StartNew();
         TimeSpan? requestDuration = null;

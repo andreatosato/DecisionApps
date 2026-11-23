@@ -58,14 +58,16 @@ Il cambio azzera punteggi, storico e statistiche e richiede una nuova preparazio
 Entrambi passano dallo stesso `PongDecisionAgent : AIAgent` di Microsoft Agent
 Framework, con identici stato, osservazioni, istruzioni di controllo e regole fisiche
 a parita di modalita. `playMode` comunica al modello la semantica temporale scelta.
-Decision usa il protocollo nativo SystemOne; GPT usa Chat Completions con output
-JSON Schema strict e nessuna conversazione persistente (`store: false`).
-GPT invia messaggi system/user e legge `choices[0].message.content`; i token
-arrivano da `prompt_tokens`/`completion_tokens`, poi vengono normalizzati nello
-stesso risultato usato da Decision. Non c'e fallback alla Responses API.
+Decision usa il protocollo nativo SystemOne; GPT Luna usa la Decisions API.
+GPT invia lo stato serializzato in `input` e una domanda `choice` in `questions`,
+con nome `action`, istruzioni e scelte `up`/`down`/`stay`.
+Legge `answers` e converte le probabilita native per opzione nello stesso risultato
+usato da Decision. I token arrivano da `input_tokens`/`output_tokens`.
+Ogni richiesta e indipendente; non c'e fallback a Chat Completions o Responses.
 Cambiare API non garantisce una latenza inferiore: va misurata sul deployment.
-Le probabilita GPT sono stime dichiarate dal modello, non logprobs o probabilita
-calibrate; non sono direttamente confrontabili con quelle native di Decision.
+Le probabilita GPT sono quelle native della Decisions API, non stime generate
+come testo JSON. Non sono necessariamente calibrate o direttamente confrontabili
+con quelle native di Decision.
 
 Il pannello mostra token input/output/totali e medie del tempo HTTP e del tempo
 totale browser/API della partita corrente. Sono incluse le risposte valide anche
@@ -119,7 +121,7 @@ o fatturata.
 ## Avvio
 
 Prerequisiti: .NET 10 SDK e accesso a un deployment **Microsoft-Decision-1.1**.
-Per il confronto GPT serve anche il deployment chat configurato sotto.
+Per il confronto GPT serve anche il deployment Luna configurato sotto.
 Non occorrono Docker o database; il percorso Decision non richiede un modello chat.
 
 Dalla root del repository:
@@ -157,8 +159,12 @@ deployment). I valori iniziali sono gli stessi della demo ChatBot.
 Le configurazioni delle due app restano indipendenti.
 
 Per GPT sono configurati `Gpt:Deployment` = `gpt-6-luna` e `Gpt:Endpoint` =
-`https://agenteinformativo.services.ai.azure.com/openai/v1/chat/completions`.
-Il deployment deve supportare Chat Completions e gli output strutturati.
+`https://agenteinformativo.services.ai.azure.com/openai/v1/decisions`.
+Il deployment deve essere GPT-6 Luna e supportare la Decisions API nella regione
+della risorsa. `model` contiene il nome esatto del deployment Azure.
+Gli override `Gpt:Endpoint` esistenti devono essere aggiornati al nuovo percorso:
+gli endpoint Chat Completions vengono rifiutati all'avvio.
+Vedere la [documentazione Azure della Decisions API](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/decisions).
 Il deployment deve gia esistere: l'app non lo crea e non verifica la disponibilita
 al caricamento della pagina. Un nome errato o permessi mancanti producono un errore
 visibile alla preparazione, senza ripiegare su Decision.

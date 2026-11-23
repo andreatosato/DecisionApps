@@ -22,7 +22,7 @@ public static class PongEndpoints
                     available = true, protocol = "NATIVE SYSTEMONE",
                     authentication = string.IsNullOrWhiteSpace(options.Value.ApiKey) ? "Microsoft Entra ID" : "API key" },
                 new { id = "gpt", label = "GPT", deployment = gpt.Value.Deployment,
-                    available = gpt.Value.IsConfigured, protocol = "CHAT COMPLETIONS",
+                    available = gpt.Value.IsConfigured, protocol = "DECISIONS API",
                     authentication = string.IsNullOrWhiteSpace(gpt.Value.ApiKey) ? "Microsoft Entra ID" : "API key" }
             }
         }));

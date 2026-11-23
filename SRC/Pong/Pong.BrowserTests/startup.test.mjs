@@ -59,7 +59,7 @@ async function withBrowser(run, { ready = true, gptAvailable = true } = {}) {
           deployment: "Decision-1.1", authentication: "test",
           models: [
             { id: "decision", label: "Decision 1.1", deployment: "Decision-1.1", available: true, protocol: "NATIVE SYSTEMONE", authentication: "test" },
-            { id: "gpt", label: "GPT", deployment: gptAvailable ? "gpt-6-luna" : "", available: gptAvailable, protocol: "CHAT COMPLETIONS", authentication: "test" }
+            { id: "gpt", label: "GPT", deployment: gptAvailable ? "gpt-6-luna" : "", available: gptAvailable, protocol: "DECISIONS API", authentication: "test" }
           ]
         })
       };
@@ -286,6 +286,8 @@ test("model selection is locked during play and pause; reset enables a fresh GPT
     select.value = "gpt";
     select.handlers.change();
     assert.equal(element("model-name").textContent, "gpt-6-luna");
+    assert.equal(element("model-protocol").textContent, "DECISIONS API");
+    assert.match(element("probability-help").textContent, /Probabilita native della Decisions API/);
     assert.match(element("score-announcement").textContent, /gpt-6-luna/);
     const starting = element("start").handlers.click();
     assert.equal(select.disabled, true);

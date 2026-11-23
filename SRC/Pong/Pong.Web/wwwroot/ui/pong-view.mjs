@@ -140,7 +140,7 @@ export class PongView {
     this.elements["opponent-label"].textContent = model.id === "gpt" ? model.deployment : model.label;
     this.elements.configuration.textContent = `Deployment: ${model.deployment} / ${model.authentication}`;
     this.elements["probability-help"].textContent = model.id === "gpt" ?
-      "Stime dichiarate da GPT, non probabilita calibrate o logprobs." : "Probabilita restituite da Decision.";
+      "Probabilita native della Decisions API, non necessariamente calibrate." : "Probabilita restituite da Decision.";
     this.elements["overlay-copy"].textContent = `Il primo a 7 vince. Al primo avvio preparo ${this.modelLabel} prima del servizio.`;
   }
 

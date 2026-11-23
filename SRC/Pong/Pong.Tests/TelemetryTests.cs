@@ -33,11 +33,11 @@ public sealed class TelemetryTests
             span.GetTagItem("gen_ai.operation.name") as string == "invoke_agent");
         Assert.Equal(agent.SpanId, model.ParentSpanId);
         Assert.Equal("azure.ai.openai", model.GetTagItem("gen_ai.provider.name"));
-        Assert.Equal("chat", model.GetTagItem("gen_ai.operation.name"));
+        Assert.Equal("classify", model.GetTagItem("gen_ai.operation.name"));
         Assert.Equal("gpt-6-luna", model.GetTagItem("gen_ai.request.model"));
-        Assert.Equal("chat_completions", model.GetTagItem("decision.protocol"));
-        Assert.Equal(22L, model.GetTagItem("gen_ai.usage.output_tokens"));
-        Assert.Equal(145d, Convert.ToDouble(agent.GetTagItem("gen_ai.usage.input_tokens")) +
+        Assert.Equal("decisions", model.GetTagItem("decision.protocol"));
+        Assert.Equal(0L, model.GetTagItem("gen_ai.usage.output_tokens"));
+        Assert.Equal(123d, Convert.ToDouble(agent.GetTagItem("gen_ai.usage.input_tokens")) +
             Convert.ToDouble(agent.GetTagItem("gen_ai.usage.output_tokens")));
         var duration = Assert.Single(capture.Measurements, m => m.Name == "gen_ai.client.operation.duration");
         Assert.Equal(model.Duration.TotalSeconds, duration.Value, 5);

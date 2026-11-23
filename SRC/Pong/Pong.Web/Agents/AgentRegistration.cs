@@ -13,7 +13,7 @@ public static class AgentRegistration
             .Validate(DecisionOptions.IsValid, "Decision requires an HTTPS SystemOne endpoint and deployment.")
             .ValidateOnStart();
         services.AddOptions<GptOptions>().BindConfiguration("Gpt")
-            .Validate(GptOptions.IsValid, "Gpt requires an HTTPS /openai/v1/chat/completions endpoint when a deployment is set.")
+            .Validate(GptOptions.IsValid, "Gpt requires an HTTPS /openai/v1/decisions endpoint when a deployment is set.")
             .ValidateOnStart();
         services.AddSingleton<TokenCredential>(_ => new DefaultAzureCredential());
         services.AddSingleton(TimeProvider.System);

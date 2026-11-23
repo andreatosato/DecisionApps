@@ -13,6 +13,6 @@ public sealed class GptOptions
         (options.Deployment.Length <= 200 &&
          Uri.TryCreate(options.Endpoint, UriKind.Absolute, out var uri) &&
          uri.Scheme == Uri.UriSchemeHttps &&
-         uri.AbsolutePath.TrimEnd('/') == "/openai/v1/chat/completions" &&
+         uri.AbsolutePath.TrimEnd('/') == "/openai/v1/decisions" &&
          string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment) && string.IsNullOrEmpty(uri.UserInfo));
 }
