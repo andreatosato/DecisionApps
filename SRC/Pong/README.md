@@ -118,6 +118,36 @@ chiamate, separato da quello delle risposte, e si azzera a nuova partita.
 L'annullamento locale non dimostra che l'inferenza remota non sia stata eseguita
 o fatturata.
 
+### Telemetria GenAI in Aspire
+
+SystemOne e GPT usano un trasporto HTTP personalizzato: l'app registra gli span
+`invoke_agent` e `classify`, attributi `gen_ai`, durata e token riportati dal
+provider. Non serve che l'endpoint SystemOne esporti direttamente OpenTelemetry.
+Input e output non vengono esportati per impostazione predefinita.
+
+Per mostrarli nel visualizzatore GenAI della dashboard, abilitare esplicitamente
+l'opzione per Pong.Web e riavviare l'app:
+
+```powershell
+dotnet user-secrets set "Telemetry:EnableSensitiveData" "true" --project .\SRC\Pong\Pong.Web
+```
+
+Gli span del modello registrano `gen_ai.input.messages` e `gen_ai.output.messages`:
+contengono il JSON nativo inviato/ricevuto (stato, osservazioni, prompt, scelte e
+risposta), rappresentato come contenuto testuale, non come una conversazione chat.
+L'opzione abilita anche i messaggi dello span agente. Chiavi API e header di
+autenticazione non sono inclusi. I contenuti esportati possono essere conservati
+dal backend di telemetria: usare l'opzione solo quando appropriato e disabilitarla
+con lo stesso comando impostando `"false"`.
+
+Le richieste interrotte dal browser restano annullate, senza risposte o token
+inventati. Lo span agente riporta `decision.cancelled=true` e
+`decision.cancellation.phase=authentication` oppure `inference`; nel secondo
+caso i tag sono presenti anche sullo span modello. Durante l'autenticazione non
+viene creato uno span di inferenza fittizio. Il wrapper Microsoft Agent Framework
+puo comunque mostrare `TaskCanceledException` e stato Error: i tag distinguono
+questo annullamento da un timeout o errore del modello.
+
 ## Avvio
 
 Prerequisiti: .NET 10 SDK e accesso a un deployment **Microsoft-Decision-1.1**.

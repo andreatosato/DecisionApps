@@ -10,7 +10,8 @@ using Pong.Web.Game;
 namespace Pong.Web.Decision;
 
 public sealed class DecisionClient(
-    HttpClient http, DecisionTokenProvider tokens, IOptions<DecisionOptions> configuration, IOptions<GptOptions> gptConfiguration)
+    HttpClient http, DecisionTokenProvider tokens, IOptions<DecisionOptions> configuration,
+    IOptions<GptOptions> gptConfiguration, IOptions<GenAiTelemetryOptions> telemetry)
 {
     public async Task<DecisionResult> EvaluateAsync(
         DecisionRequest state, string instructions, IReadOnlyDictionary<string, string> criteria,
@@ -69,6 +70,11 @@ public sealed class DecisionClient(
                 var token = await tokens.GetTokenAsync(cancellationToken);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                DecisionTelemetry.RecordCancellation(parentActivity, "authentication");
+                throw;
+            }
             catch (Exception ex) when (ex is AuthenticationFailedException or CredentialUnavailableException)
             {
                 parentActivity?.SetTag("error.type", "authentication_error");
@@ -83,6 +89,12 @@ public sealed class DecisionClient(
             parentContext: default, tags: tags);
         activity?.SetTag("decision.protocol", isGpt ? "decisions" : "systemone");
         activity?.SetTag("pong.play_mode", state.PlayMode);
+        var captureMessages = telemetry.Value.EnableSensitiveData && activity?.IsAllDataRequested == true;
+        if (captureMessages && activity is not null)
+        {
+            DecisionTelemetry.RecordMessages(activity, "gen_ai.input.messages", "user",
+                await request.Content.ReadAsStringAsync());
+        }
         var timer = Stopwatch.StartNew();
         TimeSpan? requestDuration = null;
         var failureRecorded = false;
@@ -111,10 +123,15 @@ public sealed class DecisionClient(
                     _ => new DecisionException($"The selected model returned HTTP {(int)response.StatusCode}.")
                 };
             }
-            using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var payload = JsonDocument.Parse(responseBody);
             var result = isGpt
                 ? GptProtocol.Map(payload.RootElement, state.Sequence, timer.ElapsedMilliseconds, options.Deployment)
                 : DecisionResponseMapper.Map(payload.RootElement, state.Sequence, timer.ElapsedMilliseconds, options.Deployment);
+            if (captureMessages && activity is not null)
+            {
+                DecisionTelemetry.RecordMessages(activity, "gen_ai.output.messages", "assistant", responseBody);
+            }
             if (payload.RootElement.TryGetProperty("model", out var model) &&
                 model.ValueKind == JsonValueKind.String && model.GetString() is { Length: > 0 and <= 256 } responseModel)
             {
@@ -134,8 +151,8 @@ public sealed class DecisionClient(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            activity?.SetTag("decision.cancelled", true);
-            parentActivity?.SetTag("decision.cancelled", true);
+            DecisionTelemetry.RecordCancellation(activity, "inference");
+            DecisionTelemetry.RecordCancellation(parentActivity, "inference");
             tags.Add("decision.cancelled", true);
             throw;
         }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Text.Json;
 using Pong.Web.Contracts;
 
 namespace Pong.Web.Decision;
@@ -58,4 +59,21 @@ public static class DecisionTelemetry
     }
 
     public static void RecordDuration(double seconds, in TagList tags) => Duration.Record(seconds, tags);
+
+    public static void RecordMessages(Activity activity, string attributeName, string role, string content) =>
+        activity.SetTag(attributeName, JsonSerializer.Serialize(new[]
+        {
+            new { role, parts = new[] { new { type = "text", content } } }
+        }));
+
+    public static void RecordCancellation(Activity? activity, string phase)
+    {
+        activity?.SetTag("decision.cancelled", true);
+        activity?.SetTag("decision.cancellation.phase", phase);
+    }
+}
+
+public sealed class GenAiTelemetryOptions
+{
+    public bool EnableSensitiveData { get; set; }
 }

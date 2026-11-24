@@ -19,6 +19,7 @@ internal sealed class TestHost : WebApplicationFactory<Program>
     public string EnvironmentName { get; init; } = "Testing";
     public string Endpoint { get; init; } = "https://offline.invalid/providers/microsoft/v1/systemone";
     public bool EnableGpt { get; init; }
+    public bool EnableSensitiveData { get; init; }
     public Action<IServiceCollection>? CustomizeServices { get; init; }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -33,6 +34,7 @@ internal sealed class TestHost : WebApplicationFactory<Program>
                 ["Gpt:Deployment"] = EnableGpt ? "gpt-6-luna" : "",
                 ["Gpt:Endpoint"] = "https://offline.invalid/openai/v1/decisions",
                 ["Gpt:ApiKey"] = UseApiKey ? "offline-gpt-key" : "",
+                ["Telemetry:EnableSensitiveData"] = EnableSensitiveData.ToString(),
                 ["OTEL_EXPORTER_OTLP_ENDPOINT"] = ""
             }));
         builder.ConfigureServices(services =>
@@ -60,20 +62,24 @@ internal sealed class FakeCredential : TokenCredential
     public int Calls;
     public string[]? Scopes { get; private set; }
     public Exception? Failure { get; set; }
+    public TaskCompletionSource? Gate { get; set; }
+    public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken) =>
         throw new NotSupportedException("Async authentication only.");
 
-    public override ValueTask<AccessToken> GetTokenAsync(
+    public override async ValueTask<AccessToken> GetTokenAsync(
         TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Interlocked.Increment(ref Calls);
         Scopes = requestContext.Scopes;
+        Started.TrySetResult();
+        if (Gate is not null) await Gate.Task.WaitAsync(cancellationToken);
         if (Failure is { } failure)
         {
             throw failure;
         }
-        return ValueTask.FromResult(new AccessToken("offline-token", DateTimeOffset.UtcNow.AddHours(1)));
+        return new AccessToken("offline-token", DateTimeOffset.UtcNow.AddHours(1));
     }
 }
 

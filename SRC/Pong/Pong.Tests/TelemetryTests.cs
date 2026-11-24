@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Azure.Identity;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
@@ -19,6 +21,73 @@ public sealed class TelemetryCollection;
 [Collection("Telemetry")]
 public sealed class TelemetryTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CapturesNativeModelMessagesOnlyWithSensitiveDataOptIn(bool gpt)
+    {
+        using var capture = new Capture();
+        using var factory = new TestHost { EnableGpt = gpt, UseApiKey = true, EnableSensitiveData = true };
+        if (gpt) factory.Handler.ResponseBody = FakeHandler.ValidGptResponse;
+        using var client = factory.CreateClient();
+        using var response = await client.PostAsJsonAsync("/api/decisions",
+            TestHost.ObservedState() with { Model = gpt ? "gpt" : "decision" });
+        response.EnsureSuccessStatusCode();
+        var model = Model(capture);
+        using var input = JsonDocument.Parse(Assert.IsType<string>(model.GetTagItem("gen_ai.input.messages")));
+        using var output = JsonDocument.Parse(Assert.IsType<string>(model.GetTagItem("gen_ai.output.messages")));
+        Assert.Equal("user", input.RootElement[0].GetProperty("role").GetString());
+        Assert.Equal("text", input.RootElement[0].GetProperty("parts")[0].GetProperty("type").GetString());
+        Assert.Equal(factory.Handler.RequestBody,
+            input.RootElement[0].GetProperty("parts")[0].GetProperty("content").GetString());
+        Assert.Equal("assistant", output.RootElement[0].GetProperty("role").GetString());
+        Assert.Equal(factory.Handler.ResponseBody,
+            output.RootElement[0].GetProperty("parts")[0].GetProperty("content").GetString());
+        var telemetry = string.Join("\n", capture.Spans.SelectMany(span => span.TagObjects)
+            .Select(tag => $"{tag.Key}={tag.Value}"));
+        Assert.DoesNotContain("offline-test-key", telemetry);
+        Assert.DoesNotContain("offline-gpt-key", telemetry);
+        Assert.DoesNotContain("offline-token", telemetry);
+    }
+
+    [Theory]
+    [InlineData("authentication")]
+    [InlineData("inference")]
+    public async Task AgentCancellationReportsPhaseWithoutInventingInference(string phase)
+    {
+        using var capture = new Capture();
+        using var factory = new TestHost();
+        if (phase == "authentication")
+            factory.Credential.Gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        else
+            factory.Handler.WaitUntilCancelled = true;
+        using var client = factory.CreateClient();
+        var agent = factory.Services.GetRequiredService<AIAgent>();
+        using var cancellation = new CancellationTokenSource();
+        var task = agent.RunAsync(JsonSerializer.Serialize(TestHost.State()), cancellationToken: cancellation.Token);
+        await (phase == "authentication" ? factory.Credential.Started.Task : factory.Handler.Started.Task)
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        cancellation.Cancel();
+        try
+        {
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+            var span = Assert.Single(capture.Spans, s => s.Source.Name == DecisionTelemetry.AgentSourceName);
+            Assert.Equal(true, span.GetTagItem("decision.cancelled"));
+            Assert.Equal(phase, span.GetTagItem("decision.cancellation.phase"));
+            Assert.Null(span.GetTagItem("gen_ai.usage.input_tokens"));
+            if (phase == "authentication")
+            {
+                Assert.Equal(0, factory.Handler.Calls);
+                Assert.DoesNotContain(capture.Spans, s => s.Source.Name == DecisionTelemetry.ModelSourceName);
+                Assert.Empty(capture.Measurements);
+            }
+        }
+        finally
+        {
+            factory.Credential.Gate?.TrySetResult();
+        }
+    }
+
     [Fact]
     public async Task GptReportsCorrelatedModelTimingAndTokensWithItsOwnDeploymentTags()
     {
@@ -103,6 +172,8 @@ public sealed class TelemetryTests
         Assert.DoesNotContain("paddleY", telemetry);
         Assert.DoesNotContain("timestampMilliseconds", telemetry);
         Assert.DoesNotContain("estimatedResponseMilliseconds", telemetry);
+        Assert.Null(model.GetTagItem("gen_ai.input.messages"));
+        Assert.Null(model.GetTagItem("gen_ai.output.messages"));
     }
 
     [Fact]

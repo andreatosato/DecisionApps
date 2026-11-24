@@ -1,6 +1,7 @@
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.Options;
 using Pong.Web.Decision;
 
 namespace Pong.Web.Agents;
@@ -9,6 +10,7 @@ public static class AgentRegistration
 {
     public static IServiceCollection AddPongAgent(this IServiceCollection services)
     {
+        services.AddOptions<GenAiTelemetryOptions>().BindConfiguration("Telemetry");
         services.AddOptions<DecisionOptions>().BindConfiguration("Decision")
             .Validate(DecisionOptions.IsValid, "Decision requires an HTTPS SystemOne endpoint and deployment.")
             .ValidateOnStart();
@@ -26,7 +28,9 @@ public static class AgentRegistration
         services.AddTransient<PongDecisionAgent>();
         services.AddTransient<AIAgent>(provider => provider.GetRequiredService<PongDecisionAgent>()
             .AsBuilder()
-            .UseOpenTelemetry(DecisionTelemetry.AgentSourceName, options => options.EnableSensitiveData = false)
+            .UseOpenTelemetry(DecisionTelemetry.AgentSourceName, options =>
+                options.EnableSensitiveData = provider.GetRequiredService<IOptions<GenAiTelemetryOptions>>()
+                    .Value.EnableSensitiveData)
             .Build());
         return services;
     }
